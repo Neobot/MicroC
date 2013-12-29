@@ -19,7 +19,7 @@ public:
         TourneSeulement = 2,
         AvanceSeulement = 3,
     };
-
+    
     Point();
 
     float x;

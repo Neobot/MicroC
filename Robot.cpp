@@ -32,8 +32,8 @@ Robot::Robot(Servo* servoArG, Servo* servoArD, float periodAsserv, float x, floa
   this->_sensAvantRoueGauche = true;
   this->_sensAvantRoueDroite = true;
 	
-	this->_pidDist = new PID(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE);
-	this->_pidOrientation = new PID(ACTIVE_PID_ANGLE, KP_ANGLE, KD_ANGLE);
+	this->_pidDist = new PID(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE, KI_DISTANCE);
+	this->_pidOrientation = new PID(ACTIVE_PID_ANGLE, KP_ANGLE, KD_ANGLE, KI_ANGLE);
 	
 	this->_consigneDist = new Consigne(VITESSE_MAX, ACCELARATION_MAX_EN_REEL_LIN, periodAsserv, 1.4, 5);
 	this->_consigneOrientation = new Consigne(VITESSE_MAX_ROT, ACCELARATION_MAX_EN_REEL_ROT, periodAsserv, 0.05);

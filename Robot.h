@@ -41,10 +41,12 @@
 #define ACTIVE_PID_DISTANCE true
 #define KP_DISTANCE 0.01
 #define KD_DISTANCE 0.0
+#define KI_DISTANCE 0.0
 
 #define ACTIVE_PID_ANGLE true
 #define KP_ANGLE 0.50
 #define KD_ANGLE 0.0
+#define KI_ANGLE 0.0
 
 #define COEFF_CORRECTION_TAILLE_ROUE_FOLLE 1
 
