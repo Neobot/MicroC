@@ -184,45 +184,23 @@ void Robot::calculCommande()
     float commmandeRoueDroite = this->_pidDist->_commande + this->_pidOrientation->_commande;
     float commmandeRoueGauche = this->_pidDist->_commande - this->_pidOrientation->_commande;
 	
-	
-	// determination du sens
-    if (commmandeRoueDroite >= 0)
-    {
-      this->_sensAvantRoueDroite = true;
-    }
-    else
-    {
-      this->_sensAvantRoueDroite = false;
-    }
-	commmandeRoueDroite = fabs(commmandeRoueDroite);
-    
-    if (commmandeRoueGauche >= 0)
-    {
-      this->_sensAvantRoueGauche = true;
-    }
-    else
-    {
-      this->_sensAvantRoueGauche = false;
-    }
-	commmandeRoueGauche = fabs(commmandeRoueGauche);
-	
 	float rapportDroite = 1.0;
 	float rapportGauche = 1.0;
 	
-	if (commmandeRoueDroite > CONSIGNE_MAX || commmandeRoueGauche > CONSIGNE_MAX)
+    if (fabs(commmandeRoueDroite) > CONSIGNE_MAX || fabs(commmandeRoueGauche) > CONSIGNE_MAX)
 	{
-		if (commmandeRoueDroite > commmandeRoueGauche)
+        if (fabs(commmandeRoueDroite) > fabs(commmandeRoueGauche))
 		{
 			rapportDroite = 1.0; 
-			rapportGauche = commmandeRoueDroite != 0 ? commmandeRoueGauche / commmandeRoueDroite : 1;
+            rapportGauche = commmandeRoueDroite != 0 ? fabs(commmandeRoueGauche) / fabs(commmandeRoueDroite) : 1;
 		}
 		else
 		{
-			rapportDroite = commmandeRoueGauche != 0 ? commmandeRoueDroite / commmandeRoueGauche : 1;
+            rapportDroite = commmandeRoueGauche != 0 ? fabs(commmandeRoueDroite) / fabs(commmandeRoueGauche) : 1;
 			rapportGauche = 1.0;
 		}
 	}
-	
+
 	this->_commmandeRoueDroite = (int) (rapportDroite * this->filtreCommandeRoue(commmandeRoueDroite));
 	this->_commmandeRoueGauche = (int) (rapportGauche * this->filtreCommandeRoue(commmandeRoueGauche));
 }
@@ -233,13 +211,17 @@ float Robot::filtreCommandeRoue(float value)
   {
     value = CONSIGNE_MAX;
   }
-  
-  float commande = (VALEUR_MAX_PWM * value / CONSIGNE_MAX) * RATIO_PWM + OFFSET;
-  
-  if (this->_consigneDist->calcEstArrive() == true || commande <= (OFFSET +  OFFSET / 200))
+  else if (value < -CONSIGNE_MAX)
   {
-    commande = 0;
+      value = -CONSIGNE_MAX;
   }
+  
+  if (this->_consigneDist->calcEstArrive() == true)
+  {
+    value = 0;
+  }
+
+  float commande = (VALEUR_MAX_PWM * (value + CONSIGNE_MAX) / (2 * CONSIGNE_MAX)) * RATIO_PWM;
   
   return commande > VALEUR_MAX_PWM ? VALEUR_MAX_PWM : commande;
 }
@@ -360,8 +342,8 @@ bool Robot::quelSens()
       else
       {
         return true;
-      }  */
-    }
+      } 
+    }*/
   }
 }
 

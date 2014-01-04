@@ -61,48 +61,67 @@
  *                   Config                          * 
  *****************************************************/
  
- #define PIN_FIRST_PART 40		//select 0
- #define PIN_SECOND_PART 38		//select 1
- #define PIN_WHEEL 39			//select 2
+ #define PIN_SENS_MOTEUR_GAUCHE 2
+ #define PIN_SENS_MOTEUR_DROITE 3
+
+ #define PIN_SERVO_1 4
+ #define PIN_SERVO_2 5
+ #define PIN_SERVO_3 6
+ #define PIN_SERVO_4 7
+
+ #define PIN_PWM_COLOR_R 8 //ok
+ #define PIN_PWM_COLOR_B 9 //ok
+ #define PIN_PWM_COLOR_G 10 //ok
+
+ #define UM6_1 16
+ #define UM6_2 17
+
+ #define PIN_JACK 22 //ok
+ #define PIN_BOUTON_1 23
+
+ #define PIN_INTERUPTEUR_COULEUR 24 //ok
+
+ #define PIN_CONTACTEUR_1 25
+ #define PIN_CONTACTEUR_2 26
+ #define PIN_CONTACTEUR_3 27
+ #define PIN_CONTACTEUR_4 28
+ #define PIN_CONTACTEUR_5 29
+ #define PIN_CONTACTEUR_6 30
+
+ #define PIN_MOTEUR_1_PWM_DIGITAL 31
+ #define PIN_MOTEUR_1_BREAK 32
+ #define PIN_MOTEUR_2_PWM_DIGITAL 33
+ #define PIN_MOTEUR_2_BREAK 34
+
+//FPGA 35->50
+ #define PIN_FIRST_PART 35		//select 0
+ #define PIN_SECOND_PART 36		//select 1
+ #define PIN_WHEEL 37			//select 2
  
- #define PIN_WORD7 37
- #define PIN_WORD6 36
- #define PIN_WORD5 35
- #define PIN_WORD4 34
- #define PIN_WORD3 33
- #define PIN_WORD2 32
- #define PIN_WORD1 31
- #define PIN_WORD0 30
- 
- #define PIN_PWM_GAUCHE 9
- #define PIN_PWM_DROITE 8
- 
- #define PIN_SENS_MOTEUR_GAUCHE 23
- #define PIN_SENS_MOTEUR_DROITE 25
- 
- #define PIN_SERVO_D 49
- #define PIN_SERVO_G 53
- 
- #define PIN_SONAR_AV_G 4
- #define PIN_SONAR_AV_D 5
- #define PIN_SONAR_AR_G 6
- #define PIN_SONAR_AR_D 7
+ #define PIN_WORD7 38
+ #define PIN_WORD6 39
+ #define PIN_WORD5 40
+ #define PIN_WORD4 41
+ #define PIN_WORD3 42
+ #define PIN_WORD2 43
+ #define PIN_WORD1 44
+ #define PIN_WORD0 45
+
+#define PIN_BOUTON_2 51
 
 
+#define PIN_SHARP_1 0 //ok
+#define PIN_SHARP_2 1 //ok
+#define PIN_SHARP_3 2 //ok
+#define PIN_SHARP_4 3 //ok
+#define PIN_SHARP_5 4 //ok
+#define PIN_SHARP_6 5 //ok
 
- #define PIN_JACK 24
- 
- #define PIN_OUTPOUT_MICROSWITCH 28
- #define PIN_MICROSWITCH_AD 29
- #define PIN_MICROSWITCH_AG 52
+#define PIN_SONAR_AV_G 6 //ok
+#define PIN_SONAR_AV_D 7 //ok
+#define PIN_SONAR_AR_G 8 //ok
+#define PIN_SONAR_AR_D 9 //ok
 
- #define PIN_INTERUPTEUR_COULEUR 22
- #define PIN_PWM_COLOR_R 2
- #define PIN_PWM_COLOR_B 3
- #define PIN_PWM_COLOR_G 4
- 
- #define PIN_RESART_GROUND 48
- #define PIN_RESTART 50
  
  #define PERIODE_ASSERV_MS 5.0
  #define PERIODE_COM_LECTURE 50.0
@@ -194,11 +213,11 @@ void MAJPosition()
 void envoiConsigne()
 {
 
-  digitalWrite(PIN_SENS_MOTEUR_GAUCHE, !batRobot->_sensAvantRoueGauche);
-  digitalWrite(PIN_SENS_MOTEUR_DROITE, batRobot->_sensAvantRoueDroite);
+  //digitalWrite(PIN_SENS_MOTEUR_GAUCHE, !batRobot->_sensAvantRoueGauche);
+  //digitalWrite(PIN_SENS_MOTEUR_DROITE, batRobot->_sensAvantRoueDroite);
 
-  analogWrite(PIN_PWM_GAUCHE, batRobot->_commmandeRoueGauche);
-  analogWrite(PIN_PWM_DROITE, batRobot->_commmandeRoueDroite);
+  analogWrite(PIN_SENS_MOTEUR_GAUCHE, batRobot->_commmandeRoueGauche);
+  analogWrite(PIN_SENS_MOTEUR_DROITE, batRobot->_commmandeRoueDroite);
 
 }
 
@@ -256,6 +275,10 @@ void litEtEnvoieSonar()
 }
 
 void bougeServo()
+{
+
+}
+
 void setLedRGB(int r, int g, int b)
 {
   
@@ -298,20 +321,26 @@ void setup()
   pinMode(PIN_FIRST_PART, OUTPUT);
   pinMode(PIN_SECOND_PART, OUTPUT);
   
-  pinMode(PIN_SENS_MOTEUR_GAUCHE, OUTPUT);
-  pinMode(PIN_SENS_MOTEUR_DROITE, OUTPUT);
-  
-  pinMode(PIN_PWM_GAUCHE, OUTPUT);
-  pinMode(PIN_PWM_DROITE, OUTPUT);
-  
-  //pinMode(PIN_PWM_GAUCHE, OUTPUT);
-  //pinMode(PIN_PWM_DROITE, OUTPUT);
-  
+  //pinMode(PIN_SENS_MOTEUR_GAUCHE, OUTPUT);
+  //pinMode(PIN_SENS_MOTEUR_DROITE, OUTPUT);
+
+  pinMode(PIN_MOTEUR_1_PWM_DIGITAL, OUTPUT);
+  pinMode(PIN_MOTEUR_1_BREAK, OUTPUT);
+
+  digitalWrite(PIN_MOTEUR_1_PWM_DIGITAL, HIGH);
+  digitalWrite(PIN_MOTEUR_1_BREAK, LOW);
+
+  pinMode(PIN_MOTEUR_2_PWM_DIGITAL, OUTPUT);
+  pinMode(PIN_MOTEUR_2_BREAK, OUTPUT);
+
+  digitalWrite(PIN_MOTEUR_2_PWM_DIGITAL, HIGH);
+  digitalWrite(PIN_MOTEUR_2_BREAK, LOW);
+
   analogWriteResolution(16);
   analogReadResolution(12);
   
-  analogWrite(PIN_PWM_GAUCHE, 0);
-  analogWrite(PIN_PWM_DROITE, 0);
+  analogWrite(PIN_SENS_MOTEUR_GAUCHE, 32767);
+  analogWrite(PIN_SENS_MOTEUR_DROITE, 32767);
    
   pinMode(PIN_WORD7, INPUT);
   pinMode(PIN_WORD6, INPUT);
@@ -322,17 +351,17 @@ void setup()
   pinMode(PIN_WORD1, INPUT);
   pinMode(PIN_WORD0, INPUT);
   
-  pinMode(PIN_OUTPOUT_MICROSWITCH, OUTPUT);
-  digitalWrite(PIN_OUTPOUT_MICROSWITCH, HIGH);
-  pinMode(PIN_MICROSWITCH_AD, INPUT_PULLUP);
-  pinMode(PIN_MICROSWITCH_AG, INPUT_PULLUP);
-  digitalWrite(PIN_MICROSWITCH_AD, LOW); //pull-down
-  digitalWrite(PIN_MICROSWITCH_AG, LOW); //pull-down
+  //pinMode(PIN_OUTPOUT_MICROSWITCH, OUTPUT);
+  //digitalWrite(PIN_OUTPOUT_MICROSWITCH, HIGH);
+  //pinMode(PIN_MICROSWITCH_AD, INPUT_PULLUP);
+  //pinMode(PIN_MICROSWITCH_AG, INPUT_PULLUP);
+  //digitalWrite(PIN_MICROSWITCH_AD, LOW); //pull-down
+  //digitalWrite(PIN_MICROSWITCH_AG, LOW); //pull-down
   
-  pinMode(PIN_RESART_GROUND, OUTPUT);
-  digitalWrite(PIN_RESART_GROUND, LOW);
-  pinMode(PIN_RESTART, INPUT);
-  digitalWrite(PIN_RESTART, HIGH);
+  //pinMode(PIN_RESART_GROUND, OUTPUT);
+  //digitalWrite(PIN_RESART_GROUND, LOW);
+  //pinMode(PIN_RESTART, INPUT);
+  //digitalWrite(PIN_RESTART, HIGH);
   
   Serial.begin(115200);
   SerialUSB.begin(115200);
@@ -340,10 +369,10 @@ void setup()
   
   SerialDEBUG.println("Veuillez plugger le jack.");
 
-  pinMode(PIN_SONAR_AV_G, INPUT);
-  pinMode(PIN_SONAR_AV_D, INPUT);
-  pinMode(PIN_SONAR_AR_G, INPUT);
-  pinMode(PIN_SONAR_AR_D, INPUT);
+  //pinMode(PIN_SONAR_AV_G, INPUT);
+  //pinMode(PIN_SONAR_AV_D, INPUT);
+  //pinMode(PIN_SONAR_AR_G, INPUT);
+  //pinMode(PIN_SONAR_AR_D, INPUT);
   setLedRGB(0, 255, 0); //vert
 
 
@@ -353,8 +382,8 @@ void setup()
   pinMode(PIN_INTERUPTEUR_COULEUR, INPUT);
   digitalWrite(PIN_INTERUPTEUR_COULEUR, HIGH); //pull-up
   
-  servoArG.attach(PIN_SERVO_G, 900, 2500);
-  servoArD.attach(PIN_SERVO_D, 900, 2500);
+  //servoArG.attach(PIN_SERVO_G, 900, 2500);
+  //servoArD.attach(PIN_SERVO_D, 900, 2500);
   
   Serial.begin(115200);
   SerialUSB.begin(115200);
@@ -377,10 +406,10 @@ void setup()
   
   setLedRGB(0, 255, 0);
   
-  int restartBtn = digitalRead(PIN_RESTART);
-  int oldRestartBtnValue = digitalRead(PIN_RESTART);
+  //int restartBtn = digitalRead(PIN_RESTART);
+  //int oldRestartBtnValue = digitalRead(PIN_RESTART);
   
-  while(!batRobot->_pingReceived)
+  /*while(!batRobot->_pingReceived)
   {
     batCom->comm_read();
     restartBtn = digitalRead(PIN_RESTART);
@@ -391,7 +420,7 @@ void setup()
       SerialDEBUG.println("Restart PC");
     }
       
-  }
+  }*/
   
   
   #ifndef DEBUG_NO_JACK
@@ -574,16 +603,18 @@ void loop()
     SerialDEBUG.println(" ");
   }*/
   
+  #endif
+  
   #ifndef NO_TPS_MATCH
   if(millis() - tempsMatch >= TPS_MATCH)
   {
-    analogWrite(PIN_PWM_GAUCHE, 0);
-    analogWrite(PIN_PWM_DROITE, 0);
+    digitalWrite(PIN_MOTEUR_1_PWM_DIGITAL, LOW);
+    digitalWrite(PIN_MOTEUR_2_PWM_DIGITAL, LOW);
     
 #ifdef DEBUG_POSITION
     //if (batRobot->_consigneDist->calcEstArrive() == false)
-    servoArG.detach();
-    servoArD.detach();
+   // servoArG.detach();
+    //servoArD.detach();
     
     SerialDEBUG.println("C'est fini");
     

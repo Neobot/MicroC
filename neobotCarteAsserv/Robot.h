@@ -34,8 +34,8 @@
 #define VITESSE_MAX_ROT .75 * 1.4
 
 #define VALEUR_MAX_PWM 65535.0
-#define OFFSET 1000.0
-#define RATIO_PWM 1.0 - OFFSET / VALEUR_MAX_PWM // pwm = OFFSET + consigne * RATIO_PWM = OFFSET + consigne * (VALEUR_MAX_PWM - OFFSET) / VALEUR_MAX_PWM
+#define OFFSET 0.0
+#define RATIO_PWM 1.0 // pwm = OFFSET + consigne * RATIO_PWM = OFFSET + consigne * (VALEUR_MAX_PWM - OFFSET) / VALEUR_MAX_PWM
 
 // PID
 #define ACTIVE_PID_DISTANCE true
