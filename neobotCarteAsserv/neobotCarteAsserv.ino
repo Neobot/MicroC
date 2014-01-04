@@ -27,7 +27,7 @@
  */
  
  
- #include <arduino.h>
+ //#include <arduino.h>
  #include <math.h>
  #include <Servo.h>
  #include "QueueList.h" // fifo
