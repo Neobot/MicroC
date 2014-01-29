@@ -53,8 +53,7 @@
 //#define DEBUG_NO_JACK
 //#define NO_TPS_MATCH
 
-#define USE_PC_COMM_DEBUG true
-
+#define USE_PC_COMM_DEBUG true //if true, debug is sent to the PC through the "sendLog" instruction
 
 
 
@@ -214,7 +213,6 @@ void MAJPosition()
 
 void envoiConsigne()
 {
-
     //digitalWrite(PIN_SENS_MOTEUR_GAUCHE, !batRobot->_sensAvantRoueGauche);
     //digitalWrite(PIN_SENS_MOTEUR_DROITE, batRobot->_sensAvantRoueDroite);
 
@@ -238,16 +236,6 @@ void litEtEnvoieSonar()
     int ad = analogRead(PIN_SONAR_AV_D);
     int rg = analogRead(PIN_SONAR_AR_G);
     int rd = analogRead(PIN_SONAR_AR_D);
-
-
-
-
-
-
-
-
-
-
 
     int valmax = 397;
 
@@ -283,11 +271,6 @@ void bougeServo()
 
 void setLedRGB(int r, int g, int b)
 {
-
-
-
-
-
     r = seuil(0, r, 255);
     g = seuil(0, g, 255);
     b = seuil(0, b, 255);
@@ -457,8 +440,6 @@ void setup()
         batLogger->println(i);
         delay(1000);
     }
-
-
 #endif
 
     initEncodeurD = readEncoder(1);
@@ -474,8 +455,6 @@ void setup()
 
 void loop()
 {
-
-
     if (commLect.ready())
     {
         batCom->comm_read();
@@ -485,8 +464,6 @@ void loop()
     {
         batCom->sendPosition();
         litEtEnvoieSonar();
-
-
     }
 
     if (asservissement.ready())
