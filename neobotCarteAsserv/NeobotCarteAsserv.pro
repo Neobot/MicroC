@@ -12,7 +12,8 @@ SOURCES += com.cpp \
             Pid.cpp \
             Point.cpp \
             Protocol.cpp \
-            Robot.cpp
+            Robot.cpp \
+        Logger.cpp
 
 
 SOURCES += com.h \
@@ -22,7 +23,8 @@ SOURCES += com.h \
             Protocol.h \
             Robot.h \
             QueueList.h \
-            softpwm.h
+            softpwm.h \
+            Logger.h
 
 
 
