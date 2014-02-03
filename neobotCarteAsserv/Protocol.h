@@ -2,7 +2,7 @@
 #define PROTOCOL_H
 
 #define MAX_LENGTH 20
-#define SerialCOMM Serial3
+#define SerialCOMM Serial
 
 class Protocol
 {

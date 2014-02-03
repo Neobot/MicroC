@@ -22,8 +22,6 @@ SOURCES += com.h \
             Point.h \
             Protocol.h \
             Robot.h \
-            QueueList.h \
-            softpwm.h \
             Logger.h
 
 

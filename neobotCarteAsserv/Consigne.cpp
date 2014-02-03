@@ -37,11 +37,11 @@ float Consigne::calculConsigne(float deltaDistRealise)
 		_vitessCourrante = newVitesseCourante;
 	else
 	{
-		SerialUSB.print("ERREUR en vitesse: ");
+		/*SerialUSB.print("ERREUR en vitesse: ");
 		SerialUSB.print(newVitesseCourante);
 		SerialUSB.print(" found at ");
 		SerialUSB.print(_distRealise);
-		SerialUSB.println("mm");
+		SerialUSB.println("mm");*/
 	}
 
 	this->majDistAccDcc();

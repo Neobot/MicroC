@@ -21,7 +21,7 @@
  * !!!!!! IMPORTANT !!!!!!
  *
  *  Ne pas oublier de changer la frequence de la pwm dans :
- *   arduino-1.5.1r2\hardware\arduino\sam\variants\arduino_due_x\variant.h L182
+ *   arduino-1.5.4\hardware\arduino\sam\variants\arduino_due_x\variant.h L182
  *
  * !!!!!! IMPORTANT !!!!!!
  */
@@ -61,9 +61,6 @@
  *                   Config                          *
  *****************************************************/
 
-#define PIN_SENS_MOTEUR_GAUCHE 2
-#define PIN_SENS_MOTEUR_DROITE 3
-
 #define PIN_SERVO_1 4
 #define PIN_SERVO_2 5
 #define PIN_SERVO_3 6
@@ -78,6 +75,7 @@
 
 #define PIN_JACK 22 //ok
 #define PIN_BOUTON_1 23
+#define PIN_BOUTON_2 51
 
 #define PIN_INTERUPTEUR_COULEUR 24 //ok
 
@@ -88,26 +86,32 @@
 #define PIN_CONTACTEUR_5 29
 #define PIN_CONTACTEUR_6 30
 
-#define PIN_MOTEUR_1_PWM_DIGITAL 31
-#define PIN_MOTEUR_1_BREAK 32
-#define PIN_MOTEUR_2_PWM_DIGITAL 33
-#define PIN_MOTEUR_2_BREAK 34
+#define PIN_MOTEUR_GAUCHE_SENS 8
+#define PIN_MOTEUR_GAUCHE_PWM_DIGITAL 31
+#define PIN_MOTEUR_GAUCHE_BREAK 32
+#define PIN_MOTEUR_DROITE_SENS 9
+#define PIN_MOTEUR_DROITE_PWM_DIGITAL 33
+#define PIN_MOTEUR_DROITE_BREAK 34
 
 //FPGA 35->50
-#define PIN_FIRST_PART 35		//select 0
-#define PIN_SECOND_PART 36		//select 1
-#define PIN_WHEEL 37			//select 2
+#define PIN_FPGA_BIT11 38
+#define PIN_FPGA_BIT10 39
+#define PIN_FPGA_BIT09 40
+#define PIN_FPGA_BIT08 41
+#define PIN_FPGA_BIT07 42
+#define PIN_FPGA_BIT06 44
+#define PIN_FPGA_BIT05 45
+#define PIN_FPGA_BIT04 46
+#define PIN_FPGA_BIT03 47
+#define PIN_FPGA_BIT02 48
+#define PIN_FPGA_BIT01 49
+#define PIN_FPGA_BIT00 50
 
-#define PIN_WORD7 38
-#define PIN_WORD6 39
-#define PIN_WORD5 40
-#define PIN_WORD4 41
-#define PIN_WORD3 42
-#define PIN_WORD2 43
-#define PIN_WORD1 44
-#define PIN_WORD0 45
+#define PIN_FPGA_SEL3 35
+#define PIN_FPGA_SEL2 36
+#define PIN_FPGA_SEL1 37
+#define PIN_FPGA_SEL0 43
 
-#define PIN_BOUTON_2 51
 
 
 #define PIN_SHARP_1 0 //ok
@@ -146,8 +150,8 @@ Servo servoArD;
 
 bool estViolet = true;
 
-unsigned int initEncodeurG = (1 << 30);
-unsigned int initEncodeurD = (1 << 30);
+unsigned int initEncodeurG;
+unsigned int initEncodeurD;
 
 unsigned long tempsMatch;
 
@@ -155,50 +159,41 @@ unsigned long tempsMatch;
 
 unsigned int readOneEncodeurWord()
 {
-    unsigned int total = digitalRead(PIN_WORD7);
-    total = (total << 1) + digitalRead(PIN_WORD6);
-    total = (total << 1) + digitalRead(PIN_WORD5);
-    total = (total << 1) + digitalRead(PIN_WORD4);
-    total = (total << 1) + digitalRead(PIN_WORD3);
-    total = (total << 1) + digitalRead(PIN_WORD2);
-    total = (total << 1) + digitalRead(PIN_WORD1);
-    total = (total << 1) + digitalRead(PIN_WORD0);
+  unsigned int total = digitalRead(PIN_FPGA_BIT11);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT10);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT09);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT08);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT07);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT06);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT05);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT04);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT03);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT02);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT01);
+  total = (total << 1) + digitalRead(PIN_FPGA_BIT00);
 
-    return total;
+  return total;
 }
 
-unsigned int readEncoder(bool wheel)
+unsigned int readEncoder(bool wheel, bool encoder, bool spd)
 {
-    digitalWrite(PIN_WHEEL, wheel);
-    digitalWrite(PIN_SECOND_PART, HIGH);
-    digitalWrite(PIN_FIRST_PART, HIGH);
+  digitalWrite(PIN_FPGA_SEL3, spd);
+  digitalWrite(PIN_FPGA_SEL2, encoder);
+  digitalWrite(PIN_FPGA_SEL1, wheel);
 
-    unsigned int total = readOneEncodeurWord();
+  digitalWrite(PIN_FPGA_SEL0, HIGH);
+  unsigned int total = readOneEncodeurWord();
 
-    digitalWrite(PIN_FIRST_PART, LOW);
+  digitalWrite(PIN_FPGA_SEL0, LOW);
+  total = (total << 12) + readOneEncodeurWord();
 
-    total = (total << 8) + readOneEncodeurWord();
-
-    digitalWrite(PIN_SECOND_PART, LOW);
-    digitalWrite(PIN_FIRST_PART, HIGH);
-
-    total = (total << 8) + readOneEncodeurWord();
-
-    digitalWrite(PIN_FIRST_PART, LOW);
-
-    total = (total << 8) + readOneEncodeurWord();
-
-    return total;
+  return total;
 }
 
 void MAJPosition()
 {
-    // En deux fois à cause du cast qui fait peter la resoltion (si direct float => pas = 128)
-    int ddg = -initEncodeurG;
-    int dg = readEncoder(0) + ddg;
-
-    int ddd = - readEncoder(1);
-    int dd = initEncodeurD + ddd;
+    int dg = readEncoder(0, 0, 0) - initEncodeurG; 
+    int dd = readEncoder(1, 0, 0) - initEncodeurD;
 
 #ifdef DEBUG_ENCODER_DIFF
     batLogger->print("dg=");
@@ -216,8 +211,8 @@ void envoiConsigne()
     //digitalWrite(PIN_SENS_MOTEUR_GAUCHE, !batRobot->_sensAvantRoueGauche);
     //digitalWrite(PIN_SENS_MOTEUR_DROITE, batRobot->_sensAvantRoueDroite);
 
-    analogWrite(PIN_SENS_MOTEUR_GAUCHE, batRobot->_commmandeRoueGauche);
-    analogWrite(PIN_SENS_MOTEUR_DROITE, batRobot->_commmandeRoueDroite);
+    analogWrite(PIN_MOTEUR_GAUCHE_SENS, batRobot->_commmandeRoueGauche);
+    analogWrite(PIN_MOTEUR_DROITE_SENS, batRobot->_commmandeRoueDroite);
 
 }
 
@@ -301,70 +296,55 @@ int readColor()
 
 void setup()
 {
+	analogWriteResolution(12);
+	analogReadResolution(12);
 
-    pinMode(PIN_WHEEL, OUTPUT);
-    pinMode(PIN_FIRST_PART, OUTPUT);
-    pinMode(PIN_SECOND_PART, OUTPUT);
+	// moteurs
+	pinMode(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, OUTPUT);
+	pinMode(PIN_MOTEUR_GAUCHE_BREAK, OUTPUT);
+	pinMode(PIN_MOTEUR_DROITE_PWM_DIGITAL, OUTPUT);
+	pinMode(PIN_MOTEUR_DROITE_BREAK, OUTPUT);
+	digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, LOW);
+	digitalWrite(PIN_MOTEUR_GAUCHE_BREAK, LOW);
+	digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, LOW);
+	digitalWrite(PIN_MOTEUR_DROITE_BREAK, LOW);
+	analogWrite(PIN_MOTEUR_GAUCHE_SENS, 2047);
+	analogWrite(PIN_MOTEUR_DROITE_SENS, 2047);
 
-    //pinMode(PIN_SENS_MOTEUR_GAUCHE, OUTPUT);
-    //pinMode(PIN_SENS_MOTEUR_DROITE, OUTPUT);
+	// FPGA
+	pinMode(PIN_FPGA_SEL3, OUTPUT);
+	pinMode(PIN_FPGA_SEL2, OUTPUT);
+	pinMode(PIN_FPGA_SEL1, OUTPUT);
+	pinMode(PIN_FPGA_SEL0, OUTPUT);
+	pinMode(PIN_FPGA_BIT11, INPUT);
+	pinMode(PIN_FPGA_BIT10, INPUT);
+	pinMode(PIN_FPGA_BIT09, INPUT);
+	pinMode(PIN_FPGA_BIT08, INPUT);
+	pinMode(PIN_FPGA_BIT07, INPUT);
+	pinMode(PIN_FPGA_BIT06, INPUT);
+	pinMode(PIN_FPGA_BIT05, INPUT);
+	pinMode(PIN_FPGA_BIT04, INPUT);
+	pinMode(PIN_FPGA_BIT03, INPUT);
+	pinMode(PIN_FPGA_BIT02, INPUT);
+	pinMode(PIN_FPGA_BIT01, INPUT);
+	pinMode(PIN_FPGA_BIT00, INPUT);
 
-    pinMode(PIN_MOTEUR_1_PWM_DIGITAL, OUTPUT);
-    pinMode(PIN_MOTEUR_1_BREAK, OUTPUT);
+	// capteurs
+	//pinMode(PIN_MICROSWITCH_AD INPUT);
+	//pinMode(PIN_MICROSWITCH_AG INPUT);
+	//pinMode(PIN_SONAR_AV_G, INPUT);
+	//pinMode(PIN_SONAR_AV_D, INPUT);
+	//pinMode(PIN_SONAR_AR_G, INPUT);
+	//pinMode(PIN_SONAR_AR_D, INPUT);
 
-    digitalWrite(PIN_MOTEUR_1_PWM_DIGITAL, HIGH);
-    digitalWrite(PIN_MOTEUR_1_BREAK, LOW);
-
-    pinMode(PIN_MOTEUR_2_PWM_DIGITAL, OUTPUT);
-    pinMode(PIN_MOTEUR_2_BREAK, OUTPUT);
-
-    digitalWrite(PIN_MOTEUR_2_PWM_DIGITAL, HIGH);
-    digitalWrite(PIN_MOTEUR_2_BREAK, LOW);
-
-    analogWriteResolution(16);
-    analogReadResolution(12);
-
-    analogWrite(PIN_SENS_MOTEUR_GAUCHE, 32767);
-    analogWrite(PIN_SENS_MOTEUR_DROITE, 32767);
-
-    pinMode(PIN_WORD7, INPUT);
-    pinMode(PIN_WORD6, INPUT);
-    pinMode(PIN_WORD5, INPUT);
-    pinMode(PIN_WORD4, INPUT);
-    pinMode(PIN_WORD3, INPUT);
-    pinMode(PIN_WORD2, INPUT);
-    pinMode(PIN_WORD1, INPUT);
-    pinMode(PIN_WORD0, INPUT);
-
-    //pinMode(PIN_OUTPOUT_MICROSWITCH, OUTPUT);
-    //digitalWrite(PIN_OUTPOUT_MICROSWITCH, HIGH);
-    //pinMode(PIN_MICROSWITCH_AD, INPUT_PULLUP);
-    //pinMode(PIN_MICROSWITCH_AG, INPUT_PULLUP);
-    //digitalWrite(PIN_MICROSWITCH_AD, LOW); //pull-down
-    //digitalWrite(PIN_MICROSWITCH_AG, LOW); //pull-down
-
-    //pinMode(PIN_RESART_GROUND, OUTPUT);
-    //digitalWrite(PIN_RESART_GROUND, LOW);
-    //pinMode(PIN_RESTART, INPUT);
-    //digitalWrite(PIN_RESTART, HIGH);
+	// autre
+	pinMode(PIN_JACK, INPUT);
+	pinMode(PIN_INTERUPTEUR_COULEUR, INPUT);
 
     Serial.begin(115200);
-    SerialUSB.begin(115200);
+    //SerialUSB.begin(115200);
 
     batLogger->println("Veuillez plugger le jack.");
-
-    //pinMode(PIN_SONAR_AV_G, INPUT);
-    //pinMode(PIN_SONAR_AV_D, INPUT);
-    //pinMode(PIN_SONAR_AR_G, INPUT);
-    //pinMode(PIN_SONAR_AR_D, INPUT);
-    setLedRGB(0, 255, 0); //vert
-
-
-    pinMode(PIN_JACK, INPUT_PULLUP);
-    //digitalWrite(PIN_JACK, LOW); //pull-down
-
-    pinMode(PIN_INTERUPTEUR_COULEUR, INPUT);
-    digitalWrite(PIN_INTERUPTEUR_COULEUR, HIGH); //pull-up
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
@@ -387,8 +367,6 @@ void setup()
     //batRobot->ajoutPoint(800, -0, false);
     //batRobot->ajoutPoint(1000, -50, true);
 
-    setLedRGB(0, 255, 0);
-
     //int restartBtn = digitalRead(PIN_RESTART);
     //int oldRestartBtnValue = digitalRead(PIN_RESTART);
 
@@ -407,7 +385,7 @@ void setup()
 
 
 #ifndef DEBUG_NO_JACK
-    setLedRGB(0, 255, 0);
+	setLedRGB(0, 255, 0);	// vert
     bool jackPlugged = true;
 
     //delay(2000);
@@ -418,6 +396,8 @@ void setup()
         readColor();
         jackPlugged = digitalRead(PIN_JACK) == LOW;
     }
+#else
+	readColor();
 #endif
 
     batLogger->println("He we gooooo");
@@ -430,10 +410,6 @@ void setup()
 
     batLogger->println("");
 
-    initEncodeurD = readEncoder(1);
-    initEncodeurG = readEncoder(0);
-    tempsMatch = millis();
-
 #ifdef DEBUG_COUNTDOWN
     for(int i = 5; i > 0; --i)
     {
@@ -442,15 +418,15 @@ void setup()
     }
 #endif
 
-    initEncodeurD = readEncoder(1);
-    initEncodeurG = readEncoder(0);
+    tempsMatch = millis();
+    initEncodeurD = readEncoder(1, 0, 0);
+    initEncodeurG = readEncoder(0, 0, 0);
     batRobot->passageAuPointSuivant();
     batRobot->vaVersPointSuivant();
     batCom->sendGo(estViolet);
 
     int color = readColor(); //HIGH = RED, LOW = BLUE
     batCom->sendGo(color == LOW);
-
 }
 
 void loop()
@@ -479,7 +455,7 @@ void loop()
             batCom->sendIsArrived();
         }
 
-#ifdef DEBUG_CONSIGNE_LIN
+#if defined(DEBUG_CONSIGNE_LIN) || defined(DEBUG_CONSIGNE_ROT)
         if (!batRobot->_consigneDist->estArrive())
         {
             batLogger->print("D: Consigne:");
@@ -493,6 +469,7 @@ void loop()
             if (batRobot->_consigneDist->estArrive())
                 batLogger->print(" ARRIVE");
             batLogger->println(" ");
+
 #ifdef DEBUG_CONSIGNE_LIN
             if (!batRobot->_consigneDist->estArrive())
             {
@@ -585,15 +562,15 @@ void loop()
 #ifndef NO_TPS_MATCH
             if(millis() - tempsMatch >= TPS_MATCH)
             {
-                digitalWrite(PIN_MOTEUR_1_PWM_DIGITAL, LOW);
-                digitalWrite(PIN_MOTEUR_2_PWM_DIGITAL, LOW);
+                digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, LOW);
+                digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, LOW);
+
+                batLogger->println("C'est fini");
 
 #ifdef DEBUG_POSITION
                 //if (batRobot->_consigneDist->calcEstArrive() == false)
                 // servoArG.detach();
                 //servoArD.detach();
-
-                batLogger->println("C'est fini");
 
                 while(1)
                 {
@@ -618,10 +595,13 @@ void loop()
                 batLogger->print(readEncoder(1));
                 batLogger->println(" ");
 #endif
-                setLedRGB(random(0, 255), random(0, 255), random(0, 255));
-                delay(50);
-            } //beurkkkk mais bon ...
-    }
+				while(1)
+				{
+					setLedRGB(random(0, 255), random(0, 255), random(0, 255));
+					delay(50);
+				}
+			} // millis() - tempsMatch >= TPS_MATCH
+	}	// asservissement.ready()
 #endif
 
 }
