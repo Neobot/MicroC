@@ -141,12 +141,12 @@ Task commEcrit(PERIODE_COM_ECRITURE);
 
 /************* Global ***************/
 
-Robot *batRobot;
-Comm *batCom;
-Logger* batLogger;
-
 Servo servoArG;
 Servo servoArD;
+
+Robot batRobot(&servoArG, &servoArD, PERIODE_ASSERV_MS);
+Comm batCom(&batRobot);
+Logger batLogger(&batCom, USE_PC_COMM_DEBUG);
 
 bool estViolet = true;
 
@@ -196,23 +196,23 @@ void MAJPosition()
     int dd = readEncoder(1, 0, 0) - initEncodeurD;
 
 #ifdef DEBUG_ENCODER_DIFF
-    batLogger->print("dg=");
-    batLogger->print(dg);
-    batLogger->print(" dd=");
-    batLogger->print(dd);
-    batLogger->println(" ");
+    batLogger.print("dg=");
+    batLogger.print(dg);
+    batLogger.print(" dd=");
+    batLogger.print(dd);
+    batLogger.println(" ");
 #endif
 
-    batRobot->majPosition((float) dg, (float) dd);
+    batRobot.majPosition((float) dg, (float) dd);
 }
 
 void envoiConsigne()
 {
-    //digitalWrite(PIN_SENS_MOTEUR_GAUCHE, !batRobot->_sensAvantRoueGauche);
-    //digitalWrite(PIN_SENS_MOTEUR_DROITE, batRobot->_sensAvantRoueDroite);
+    //digitalWrite(PIN_SENS_MOTEUR_GAUCHE, !batRobot._sensAvantRoueGauche);
+    //digitalWrite(PIN_SENS_MOTEUR_DROITE, batRobot._sensAvantRoueDroite);
 
-    analogWrite(PIN_MOTEUR_GAUCHE_SENS, batRobot->_commmandeRoueGauche);
-    analogWrite(PIN_MOTEUR_DROITE_SENS, batRobot->_commmandeRoueDroite);
+    analogWrite(PIN_MOTEUR_GAUCHE_SENS, batRobot._commmandeRoueGauche);
+    analogWrite(PIN_MOTEUR_DROITE_SENS, batRobot._commmandeRoueDroite);
 
 }
 
@@ -245,18 +245,18 @@ void litEtEnvoieSonar()
     rd = map(rd, 0, valmax, 0, 255);
 
 #ifdef DEBUG_ULTRASON
-    batLogger->print("ag=");
-    batLogger->print(ag);
-    batLogger->print(" ad=");
-    batLogger->print(ad);
-    batLogger->print(" rg=");
-    batLogger->print(rg);
-    batLogger->print(" rd=");
-    batLogger->print(rd);
-    batLogger->println(" ");
+    batLogger.print("ag=");
+    batLogger.print(ag);
+    batLogger.print(" ad=");
+    batLogger.print(ad);
+    batLogger.print(" rg=");
+    batLogger.print(rg);
+    batLogger.print(" rd=");
+    batLogger.print(rd);
+    batLogger.println(" ");
 #endif
 
-    batCom->sendSonars(ag, ad, rg, rd);
+    batCom.sendSonars(ag, ad, rg, rd);
 }
 
 void bougeServo()
@@ -344,41 +344,37 @@ void setup()
     Serial.begin(115200);
     //SerialUSB.begin(115200);
 
-    batLogger->println("Veuillez plugger le jack.");
+    batLogger.println("Veuillez plugger le jack.");
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
 
     //Serial.println("He we gooooo");
-    batRobot->MAJContaineur(true, 3);
-    batRobot->MAJContaineur(false, 3);
+    batRobot.MAJContaineur(true, 3);
+    batRobot.MAJContaineur(false, 3);
 
     servoArG.detach();
     servoArD.detach();
 
-    batRobot = new Robot(&servoArG, &servoArD, PERIODE_ASSERV_MS);
-    batCom = new Comm(batRobot);
-    batLogger = new Logger(batCom, USE_PC_COMM_DEBUG);
-
-    //batRobot->ajoutPoint(200, -50, false);
-    //batRobot->ajoutPoint(300, 0, true);
-    //batRobot->ajoutPoint(400, 0, false);
-    //batRobot->ajoutPoint(600, -50, false);
-    //batRobot->ajoutPoint(800, -0, false);
-    //batRobot->ajoutPoint(1000, -50, true);
+    //batRobot.ajoutPoint(200, -50, false);
+    //batRobot.ajoutPoint(300, 0, true);
+    //batRobot.ajoutPoint(400, 0, false);
+    //batRobot.ajoutPoint(600, -50, false);
+    //batRobot.ajoutPoint(800, -0, false);
+    //batRobot.ajoutPoint(1000, -50, true);
 
     //int restartBtn = digitalRead(PIN_RESTART);
     //int oldRestartBtnValue = digitalRead(PIN_RESTART);
 
-    /*while(!batRobot->_pingReceived)
+    /*while(!batRobot._pingReceived)
   {
-    batCom->comm_read();
+    batCom.comm_read();
     restartBtn = digitalRead(PIN_RESTART);
     if (oldRestartBtnValue != restartBtn)
     {
-      batCom->restart();
+      batCom.restart();
       oldRestartBtnValue = restartBtn;
-      batLogger->println("Restart PC");
+      batLogger.println("Restart PC");
     }
 
   }*/
@@ -389,7 +385,7 @@ void setup()
     bool jackPlugged = true;
 
     //delay(2000);
-    batLogger->println("Veuillez de-plugger le jack.");
+    batLogger.println("Veuillez de-plugger le jack.");
     
     while(jackPlugged)
     {
@@ -400,20 +396,20 @@ void setup()
 	readColor();
 #endif
 
-    batLogger->println("He we gooooo");
-    batLogger->print(batRobot->position.x);
-    batLogger->print(" ");
-    batLogger->print(batRobot->position.y);
-    batLogger->print(" ");
-    batLogger->print(batRobot->position.theta);
-    batLogger->println(" ");
+    batLogger.println("He we gooooo");
+    batLogger.print(batRobot.position.x);
+    batLogger.print(" ");
+    batLogger.print(batRobot.position.y);
+    batLogger.print(" ");
+    batLogger.print(batRobot.position.theta);
+    batLogger.println(" ");
 
-    batLogger->println("");
+    batLogger.println("");
 
 #ifdef DEBUG_COUNTDOWN
     for(int i = 5; i > 0; --i)
     {
-        batLogger->println(i);
+        batLogger.println(i);
         delay(1000);
     }
 #endif
@@ -421,140 +417,140 @@ void setup()
     tempsMatch = millis();
     initEncodeurD = readEncoder(1, 0, 0);
     initEncodeurG = readEncoder(0, 0, 0);
-    batRobot->passageAuPointSuivant();
-    batRobot->vaVersPointSuivant();
-    batCom->sendGo(estViolet);
+    batRobot.passageAuPointSuivant();
+    batRobot.vaVersPointSuivant();
+    batCom.sendGo(estViolet);
 
     int color = readColor(); //HIGH = RED, LOW = BLUE
-    batCom->sendGo(color == LOW);
+    batCom.sendGo(color == LOW);
 }
 
 void loop()
 {
     if (commLect.ready())
     {
-        batCom->comm_read();
+        batCom.comm_read();
     }
 
     if (commEcrit.ready())
     {
-        batCom->sendPosition();
+        batCom.sendPosition();
         litEtEnvoieSonar();
     }
 
     if (asservissement.ready())
     {
         MAJPosition();
-        batRobot->vaVersPointSuivant();
-        batRobot->calculConsigne();
-        batRobot->calculCommande();
+        batRobot.vaVersPointSuivant();
+        batRobot.calculConsigne();
+        batRobot.calculCommande();
         envoiConsigne();
-        if(batRobot->passageAuPointSuivant())
+        if(batRobot.passageAuPointSuivant())
         {
-            batCom->sendConsigne();
-            batCom->sendIsArrived();
+            batCom.sendConsigne();
+            batCom.sendIsArrived();
         }
 
 #if defined(DEBUG_CONSIGNE_LIN) || defined(DEBUG_CONSIGNE_ROT)
-        if (!batRobot->_consigneDist->estArrive())
+        if (!batRobot._consigneDist->estArrive())
         {
-            batLogger->print("D: Consigne:");
-            batLogger->print(batRobot->_consigneDist->_consigne);
-            batLogger->print(" dr:");
-            batLogger->print(batRobot->_consigneDist->_distDemande - batRobot->_consigneDist->_distRealise);
-            batLogger->print(" Dcc:");
-            batLogger->print(batRobot->_consigneDist->_distDcc);
-            batLogger->print(" Vc:");
-            batLogger->print(batRobot->_consigneDist->_vitessCourrante);
-            if (batRobot->_consigneDist->estArrive())
-                batLogger->print(" ARRIVE");
-            batLogger->println(" ");
+            batLogger.print("D: Consigne:");
+            batLogger.print(batRobot._consigneDist->_consigne);
+            batLogger.print(" dr:");
+            batLogger.print(batRobot._consigneDist->_distDemande - batRobot._consigneDist->_distRealise);
+            batLogger.print(" Dcc:");
+            batLogger.print(batRobot._consigneDist->_distDcc);
+            batLogger.print(" Vc:");
+            batLogger.print(batRobot._consigneDist->_vitessCourrante);
+            if (batRobot._consigneDist->estArrive())
+                batLogger.print(" ARRIVE");
+            batLogger.println(" ");
 
 #ifdef DEBUG_CONSIGNE_LIN
-            if (!batRobot->_consigneDist->estArrive())
+            if (!batRobot._consigneDist->estArrive())
             {
-                batLogger->print("D: Consigne:");
-                batLogger->print(batRobot->_consigneDist->_consigne);
-                batLogger->print(" dr:");
-                batLogger->print(batRobot->_consigneDist->_distDemande - batRobot->_consigneDist->_distRealise);
-                batLogger->print(" Dcc:");
-                batLogger->print(batRobot->_consigneDist->_distDcc);
-                batLogger->print(" Vc:");
-                batLogger->print(batRobot->_consigneDist->_vitessCourrante);
-                if (batRobot->_consigneDist->estArrive())
-                    batLogger->print(" ARRIVE");
-                batLogger->println(" ");
+                batLogger.print("D: Consigne:");
+                batLogger.print(batRobot._consigneDist->_consigne);
+                batLogger.print(" dr:");
+                batLogger.print(batRobot._consigneDist->_distDemande - batRobot._consigneDist->_distRealise);
+                batLogger.print(" Dcc:");
+                batLogger.print(batRobot._consigneDist->_distDcc);
+                batLogger.print(" Vc:");
+                batLogger.print(batRobot._consigneDist->_vitessCourrante);
+                if (batRobot._consigneDist->estArrive())
+                    batLogger.print(" ARRIVE");
+                batLogger.println(" ");
             }
 #endif
 
 #ifdef DEBUG_CONSIGNE_ROT
-            if (!batRobot->_consigneOrientation->estArrive())
+            if (!batRobot._consigneOrientation->estArrive())
             {
-                batLogger->print("R: Consigne:");
-                batLogger->print(batRobot->_consigneOrientation->_consigne);
-                batLogger->print(" dr:");
-                batLogger->print(batRobot->_consigneOrientation->_distDemande - batRobot->_consigneOrientation->_distRealise);
-                batLogger->print(" Dcc:");
-                batLogger->print(batRobot->_consigneOrientation->_distDcc);
-                batLogger->print(" Vc:");
-                batLogger->print(batRobot->_consigneOrientation->_vitessCourrante);
-                if (batRobot->_consigneOrientation->estArrive())
-                    batLogger->print(" ARRIVE");
-                batLogger->println(" ");
+                batLogger.print("R: Consigne:");
+                batLogger.print(batRobot._consigneOrientation->_consigne);
+                batLogger.print(" dr:");
+                batLogger.print(batRobot._consigneOrientation->_distDemande - batRobot._consigneOrientation->_distRealise);
+                batLogger.print(" Dcc:");
+                batLogger.print(batRobot._consigneOrientation->_distDcc);
+                batLogger.print(" Vc:");
+                batLogger.print(batRobot._consigneOrientation->_vitessCourrante);
+                if (batRobot._consigneOrientation->estArrive())
+                    batLogger.print(" ARRIVE");
+                batLogger.println(" ");
             }
 #endif
 
 #ifdef DEBUG_POSITION
-            //if (batRobot->_consigneDist->calcEstArrive() == false)
+            //if (batRobot._consigneDist->calcEstArrive() == false)
             {
-                batLogger->print("xp=");
-                batLogger->print(batRobot->pointSuivant.x);
-                batLogger->print(" yp=");
-                batLogger->print(batRobot->pointSuivant.y);
-                batLogger->print(" x=");
-                batLogger->print(batRobot->position.x);
-                batLogger->print(" y=");
-                batLogger->print(batRobot->position.y);
-                batLogger->print(" t=");
-                batLogger->print(batRobot->position.theta);
-                batLogger->println(" ");
+                batLogger.print("xp=");
+                batLogger.print(batRobot.pointSuivant.x);
+                batLogger.print(" yp=");
+                batLogger.print(batRobot.pointSuivant.y);
+                batLogger.print(" x=");
+                batLogger.print(batRobot.position.x);
+                batLogger.print(" y=");
+                batLogger.print(batRobot.position.y);
+                batLogger.print(" t=");
+                batLogger.print(batRobot.position.theta);
+                batLogger.println(" ");
             }
 #endif
 
 #ifdef DEBUG_ENCODER
-            batLogger->print("g=");
-            batLogger->print(readEncoder(0));
-            batLogger->print(" r=");
-            batLogger->print(readEncoder(1));
-            batLogger->println(" ");
+            batLogger.print("g=");
+            batLogger.print(readEncoder(0));
+            batLogger.print(" r=");
+            batLogger.print(readEncoder(1));
+            batLogger.println(" ");
 #endif
         }
 #endif
 
 #ifdef DEBUG_CONSIGNE_ROT
-        if (!batRobot->_consigneOrientation->estArrive())
+        if (!batRobot._consigneOrientation->estArrive())
             /*
   if(digitalRead(PIN_MICROSWITCH_AD) == LOW || digitalRead(PIN_MICROSWITCH_AG) == LOW)
   {
-      batLogger->print("R: Consigne:");
-      batLogger->print(batRobot->_consigneOrientation->_consigne);
-      batLogger->print(" dr:");
-      batLogger->print(batRobot->_consigneOrientation->_distDemande - batRobot->_consigneOrientation->_distRealise);
-      batLogger->print(" Dcc:");
-      batLogger->print(batRobot->_consigneOrientation->_distDcc);
-      batLogger->print(" Vc:");
-      batLogger->print(batRobot->_consigneOrientation->_vitessCourrante);
-      if (batRobot->_consigneOrientation->estArrive())
-        batLogger->print(" ARRIVE");
-      batLogger->println(" ");
+      batLogger.print("R: Consigne:");
+      batLogger.print(batRobot._consigneOrientation->_consigne);
+      batLogger.print(" dr:");
+      batLogger.print(batRobot._consigneOrientation->_distDemande - batRobot._consigneOrientation->_distRealise);
+      batLogger.print(" Dcc:");
+      batLogger.print(batRobot._consigneOrientation->_distDcc);
+      batLogger.print(" Vc:");
+      batLogger.print(batRobot._consigneOrientation->_vitessCourrante);
+      if (batRobot._consigneOrientation->estArrive())
+        batLogger.print(" ARRIVE");
+      batLogger.println(" ");
   }
 #endif
-    //batCom->sendMicroswitch(digitalRead(PIN_MICROSWITCH_AG) == LOW, digitalRead(PIN_MICROSWITCH_AD) == LOW);
-    batLogger->print("d: ");
-    batLogger->print(digitalRead(PIN_MICROSWITCH_AD));
-    batLogger->print(" g: ");
-    batLogger->print(digitalRead(PIN_MICROSWITCH_AG));
-    batLogger->println(" ");
+    //batCom.sendMicroswitch(digitalRead(PIN_MICROSWITCH_AG) == LOW, digitalRead(PIN_MICROSWITCH_AD) == LOW);
+    batLogger.print("d: ");
+    batLogger.print(digitalRead(PIN_MICROSWITCH_AD));
+    batLogger.print(" g: ");
+    batLogger.print(digitalRead(PIN_MICROSWITCH_AG));
+    batLogger.println(" ");
   }*/
 
 #endif
@@ -565,35 +561,35 @@ void loop()
                 digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, LOW);
                 digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, LOW);
 
-                batLogger->println("C'est fini");
+                batLogger.println("C'est fini");
 
 #ifdef DEBUG_POSITION
-                //if (batRobot->_consigneDist->calcEstArrive() == false)
+                //if (batRobot._consigneDist->calcEstArrive() == false)
                 // servoArG.detach();
                 //servoArD.detach();
 
                 while(1)
                 {
-                    batLogger->print("xp=");
-                    batLogger->print(batRobot->pointSuivant.x);
-                    batLogger->print(" yp=");
-                    batLogger->print(batRobot->pointSuivant.y);
-                    batLogger->print(" x=");
-                    batLogger->print(batRobot->position.x);
-                    batLogger->print(" y=");
-                    batLogger->print(batRobot->position.y);
-                    batLogger->print(" t=");
-                    batLogger->print(batRobot->position.theta);
-                    batLogger->println(" ");
+                    batLogger.print("xp=");
+                    batLogger.print(batRobot.pointSuivant.x);
+                    batLogger.print(" yp=");
+                    batLogger.print(batRobot.pointSuivant.y);
+                    batLogger.print(" x=");
+                    batLogger.print(batRobot.position.x);
+                    batLogger.print(" y=");
+                    batLogger.print(batRobot.position.y);
+                    batLogger.print(" t=");
+                    batLogger.print(batRobot.position.theta);
+                    batLogger.println(" ");
                 }
 #endif
 
 #ifdef DEBUG_ENCODER
-                batLogger->print("g=");
-                batLogger->print(readEncoder(0));
-                batLogger->print(" r=");
-                batLogger->print(readEncoder(1));
-                batLogger->println(" ");
+                batLogger.print("g=");
+                batLogger.print(readEncoder(0));
+                batLogger.print(" r=");
+                batLogger.print(readEncoder(1));
+                batLogger.println(" ");
 #endif
 				while(1)
 				{
