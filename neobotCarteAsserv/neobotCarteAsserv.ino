@@ -35,23 +35,21 @@
 #include "Protocol.h"
 #include "Robot.h"
 #include "com.h"
-#include "logger.h"
-
+#include "Logger.h"
 
 
 /************* DEBUG ***************/
 
 //#define DEBUG_ENCODER
 //#define DEBUG_ENCODER_DIFF
-//#define DEBUG_POSITION
+#define DEBUG_POSITION
 
 //#define DEBUG_CONSIGNE_LIN
 //#define DEBUG_CONSIGNE_ROT
-#define DEBUG_ULTRASON
 //#define DEBUG_ULTRASON
 //#define DEBUG_COUNTDOWN
-//#define DEBUG_NO_JACK
-//#define NO_TPS_MATCH
+#define DEBUG_NO_JACK
+#define NO_TPS_MATCH
 
 #define USE_PC_COMM_DEBUG true //if true, debug is sent to the PC through the "sendLog" instruction
 
@@ -66,8 +64,8 @@
 #define PIN_SERVO_3 6
 #define PIN_SERVO_4 7
 
-#define PIN_PWM_COLOR_R 8 //ok
-#define PIN_PWM_COLOR_B 9 //ok
+#define PIN_PWM_COLOR_R 2 //ok
+#define PIN_PWM_COLOR_B 3 //ok
 #define PIN_PWM_COLOR_G 10 //ok
 
 #define UM6_1 16
@@ -344,6 +342,10 @@ void setup()
     Serial.begin(115200);
     //SerialUSB.begin(115200);
 
+   batRobot = new Robot(&servoArG, &servoArD, PERIODE_ASSERV_MS);
+    batCom = new Comm(batRobot);
+    batLogger = new Logger(batCom, USE_PC_COMM_DEBUG);
+
     batLogger->println("Veuillez plugger le jack.");
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
@@ -355,10 +357,6 @@ void setup()
 
     servoArG.detach();
     servoArD.detach();
-
-    batRobot = new Robot(&servoArG, &servoArD, PERIODE_ASSERV_MS);
-    batCom = new Comm(batRobot);
-    batLogger = new Logger(batCom, USE_PC_COMM_DEBUG);
 
     //batRobot->ajoutPoint(200, -50, false);
     //batRobot->ajoutPoint(300, 0, true);
@@ -601,7 +599,7 @@ void loop()
 					delay(50);
 				}
 			} // millis() - tempsMatch >= TPS_MATCH
-	}	// asservissement.ready()
 #endif
+    }	// asservissement.ready()
 
 }
