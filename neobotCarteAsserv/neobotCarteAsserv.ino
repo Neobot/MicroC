@@ -51,7 +51,7 @@
 #define DEBUG_NO_JACK
 #define NO_TPS_MATCH
 
-#define USE_PC_COMM_DEBUG true //if true, debug is sent to the PC through the "sendLog" instruction
+#define USE_PC_COMM_DEBUG false //if true, debug is sent to the PC through the "sendLog" instruction
 
 
 
@@ -91,7 +91,7 @@
 #define PIN_MOTEUR_DROITE_PWM_DIGITAL 33
 #define PIN_MOTEUR_DROITE_BREAK 34
 
-//FPGA 35->50
+//FPGA
 #define PIN_FPGA_BIT11 38
 #define PIN_FPGA_BIT10 39
 #define PIN_FPGA_BIT09 40
@@ -111,7 +111,7 @@
 #define PIN_FPGA_SEL0 43
 
 
-
+// sensors
 #define PIN_SHARP_1 0 //ok
 #define PIN_SHARP_2 1 //ok
 #define PIN_SHARP_3 2 //ok
@@ -124,6 +124,8 @@
 #define PIN_SONAR_AR_G 8 //ok
 #define PIN_SONAR_AR_D 9 //ok
 
+// parameters
+#define VALEUR_MAX_PWM 4095.0
 
 #define PERIODE_ASSERV_MS 5.0
 #define PERIODE_COM_LECTURE 50.0
@@ -268,9 +270,9 @@ void setLedRGB(int r, int g, int b)
     g = seuil(0, g, 255);
     b = seuil(0, b, 255);
 
-    r = map(r, 0, 255, 0, 65535);
-    g = map(g, 0, 255, 0, 65535);
-    b = map(b, 0, 255, 0, 65535);
+    r = map(r, 0, 255, 0, VALEUR_MAX_PWM);
+    g = map(g, 0, 255, 0, VALEUR_MAX_PWM);
+    b = map(b, 0, 255, 0, VALEUR_MAX_PWM);
 
     analogWrite(PIN_PWM_COLOR_R, r);
     analogWrite(PIN_PWM_COLOR_G, g);
@@ -342,7 +344,7 @@ void setup()
     Serial.begin(115200);
     //SerialUSB.begin(115200);
 
-   batRobot = new Robot(&servoArG, &servoArD, PERIODE_ASSERV_MS);
+    batRobot = new Robot(&servoArG, &servoArD, PERIODE_ASSERV_MS);
     batCom = new Comm(batRobot);
     batLogger = new Logger(batCom, USE_PC_COMM_DEBUG);
 
@@ -352,11 +354,11 @@ void setup()
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
 
     //Serial.println("He we gooooo");
-    batRobot->MAJContaineur(true, 3);
-    batRobot->MAJContaineur(false, 3);
+    //batRobot->MAJContaineur(true, 3);
+    //batRobot->MAJContaineur(false, 3);
 
-    servoArG.detach();
-    servoArD.detach();
+    //servoArG.detach();
+    //servoArD.detach();
 
     //batRobot->ajoutPoint(200, -50, false);
     //batRobot->ajoutPoint(300, 0, true);
@@ -398,7 +400,7 @@ void setup()
 	readColor();
 #endif
 
-    batLogger->println("He we gooooo");
+    batLogger->println("Here we gooooo");
     batLogger->print(batRobot->position.x);
     batLogger->print(" ");
     batLogger->print(batRobot->position.y);
@@ -526,7 +528,7 @@ void loop()
             batLogger->print(readEncoder(1));
             batLogger->println(" ");
 #endif
-        }
+        }   // !batRobot->_consigneDist->estArrive()
 #endif
 
 #ifdef DEBUG_CONSIGNE_ROT
@@ -558,47 +560,47 @@ void loop()
 #endif
 
 #ifndef NO_TPS_MATCH
-            if(millis() - tempsMatch >= TPS_MATCH)
-            {
-                digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, LOW);
-                digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, LOW);
+        if(millis() - tempsMatch >= TPS_MATCH)
+        {
+            digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, LOW);
+            digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, LOW);
 
-                batLogger->println("C'est fini");
+            batLogger->println("C'est fini");
 
 #ifdef DEBUG_POSITION
                 //if (batRobot->_consigneDist->calcEstArrive() == false)
                 // servoArG.detach();
                 //servoArD.detach();
 
-                while(1)
-                {
-                    batLogger->print("xp=");
-                    batLogger->print(batRobot->pointSuivant.x);
-                    batLogger->print(" yp=");
-                    batLogger->print(batRobot->pointSuivant.y);
-                    batLogger->print(" x=");
-                    batLogger->print(batRobot->position.x);
-                    batLogger->print(" y=");
-                    batLogger->print(batRobot->position.y);
-                    batLogger->print(" t=");
-                    batLogger->print(batRobot->position.theta);
-                    batLogger->println(" ");
-                }
+            while(1)
+            {
+                batLogger->print("xp=");
+                batLogger->print(batRobot->pointSuivant.x);
+                batLogger->print(" yp=");
+                batLogger->print(batRobot->pointSuivant.y);
+                batLogger->print(" x=");
+                batLogger->print(batRobot->position.x);
+                batLogger->print(" y=");
+                batLogger->print(batRobot->position.y);
+                batLogger->print(" t=");
+                batLogger->print(batRobot->position.theta);
+                batLogger->println(" ");
+            }
 #endif
 
 #ifdef DEBUG_ENCODER
-                batLogger->print("g=");
-                batLogger->print(readEncoder(0));
-                batLogger->print(" r=");
-                batLogger->print(readEncoder(1));
-                batLogger->println(" ");
+            batLogger->print("g=");
+            batLogger->print(readEncoder(0, 0, 0));
+            batLogger->print(" r=");
+            batLogger->print(readEncoder(1, 0, 0));
+            batLogger->println(" ");
 #endif
-				while(1)
-				{
-					setLedRGB(random(0, 255), random(0, 255), random(0, 255));
-					delay(50);
-				}
-			} // millis() - tempsMatch >= TPS_MATCH
+            while(1)
+            {
+                setLedRGB(random(0, 255), random(0, 255), random(0, 255));
+                delay(50);
+            }
+        } // millis() - tempsMatch >= TPS_MATCH
 #endif
     }	// asservissement.ready()
 
