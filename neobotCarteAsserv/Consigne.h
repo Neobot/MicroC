@@ -17,14 +17,14 @@
 #ifndef CONSIGNE_H
 #define CONSIGNE_H
 
-const float CONSIGNE_MAX = 65535.0;
+const float COMMANDE_MOTEUR_MAX = 4095.0;
 const float DIST_ARRIVE_AVEC_FREINAGE = 5.0;
 const float DIST_ARRIVE_SANS_FREINAGE = 5.0;
 
 class Consigne
 {
     public:
-      Consigne(float vmax, float amax, float periodeConsigne, float dccCoeff, float distArrive = DIST_ARRIVE_AVEC_FREINAGE); // 5 mm d'arrivï¿½
+	  Consigne(float vmax, float amax, float periodeConsigne, float dccCoeff, float distArrive = DIST_ARRIVE_AVEC_FREINAGE); // 5 mm d'arrivée
 		
       float calculConsigne(float deltaDistRealise);
       void setDemande(float dist, bool freinage = true);

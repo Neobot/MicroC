@@ -20,17 +20,14 @@ Robot::Robot(Servo* servoArG, Servo* servoArD, float periodAsserv, float x, floa
 	this->forceObjectif(point);
 
 	this->_thetaTotal = 0.0;
-	this->_deltaDist = 0.0;
-  this->_deltaOrient = 0.0;
+	this->_deltaDistMm = 0.0;
+  this->_deltaOrientRad = 0.0;
 	this->_periodAsserv = periodAsserv;
-  this->_commmandeRoueGauche = 0;
-  this->_commmandeRoueDroite = 0;
+  this->_commandeRoueGauche = 0;
+  this->_commandeRoueDroite = 0;
 	
 	this->pasPrecendentGauche = 0.0;
 	this->pasPrecendentDroit = 0.0;
-  
-  this->_sensAvantRoueGauche = true;
-  this->_sensAvantRoueDroite = true;
 	
 	this->_pidDist = new PID(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE);
 	this->_pidOrientation = new PID(ACTIVE_PID_ANGLE, KP_ANGLE, KD_ANGLE);
@@ -85,27 +82,27 @@ void Robot::stop()
 
 void Robot::majPosition(float pasRoueGauche, float pasRoueDroite)
 {
-    float distGauche = ((float) COEF_CORRECTION_ROUE_FOLLE_GAUCHE) *  (pasRoueGauche - this->pasPrecendentGauche) * COEFF_CONVERTION_PAS_METRE;
-    float distDroite = ((float) COEF_CORRECTION_ROUE_FOLLE_DROITE) *  (pasRoueDroite - this->pasPrecendentDroit) *  COEFF_CONVERTION_PAS_METRE;
+	float distGaucheMm = ((float) COEF_CORRECTION_ROUE_FOLLE_GAUCHE) *  (pasRoueGauche - this->pasPrecendentGauche) * COEFF_CONVERTION_PAS_MM;
+	float distDroiteMm = ((float) COEF_CORRECTION_ROUE_FOLLE_DROITE) *  (pasRoueDroite - this->pasPrecendentDroit) *  COEFF_CONVERTION_PAS_MM;
     float k = 1.0;
      
-    this->_deltaDist = (float)( distGauche + distDroite) / 2.0;
-    this->_deltaOrient = (float) ( distDroite - distGauche ) / (float) ENTRAXE;
+	this->_deltaDistMm = (float)( distGaucheMm + distDroiteMm) / 2.0;
+	this->_deltaOrientRad = (float) ( distDroiteMm - distGaucheMm ) / (float) ENTRAXE_MM;
 	
-    if (this->_deltaOrient != 0.0)
+	if (this->_deltaOrientRad != 0.0)
     {
-      k = 2.0 * sin (this->_deltaOrient / 2.0) / this->_deltaOrient ; //approx circulaire
+	  k = 2.0 * sin (this->_deltaOrientRad / 2.0) / this->_deltaOrientRad ; //approx circulaire
     }
 
-    float dX = k * this->_deltaDist * cos( this->position.theta + this->_deltaOrient / 2.0);
-    float dY = k * this->_deltaDist * sin( this->position.theta + this->_deltaOrient / 2.0);
+	float dX = k * this->_deltaDistMm * cos( this->position.theta + this->_deltaOrientRad / 2.0);
+	float dY = k * this->_deltaDistMm * sin( this->position.theta + this->_deltaOrientRad / 2.0);
   
-    float deriveX = CORFUGE * this->_deltaOrient * dY; 
-    float deriveY = - CORFUGE * this->_deltaOrient * dX;
+	float deriveX = CORFUGE * this->_deltaOrientRad * dY;
+	float deriveY = - CORFUGE * this->_deltaOrientRad * dX;
   
     this->position.x += dX + deriveX;
     this->position.y += dY + deriveY;
-    this->position.theta += this->_deltaOrient;
+	this->position.theta += this->_deltaOrientRad;
 	
     this->pasPrecendentGauche = pasRoueGauche;
     this->pasPrecendentDroit = pasRoueDroite;
@@ -114,11 +111,11 @@ void Robot::majPosition(float pasRoueGauche, float pasRoueDroite)
 
 void Robot::calculConsigne()
 {
-  float thetaDemande = this->_deltaOrient * ENTRAXE;
+  float thetaDemande = this->_deltaOrientRad * ENTRAXE_MM;
 
   if (this->_typeDeplacement == TourneEtAvance)
   {
-    this->_consigneDist->calculConsigne(this->_deltaDist);
+	this->_consigneDist->calculConsigne(this->_deltaDistMm);
     this->_consigneOrientation->calculConsigne(thetaDemande);
   }
   else if (_typeDeplacement == TournePuisAvance)
@@ -134,7 +131,7 @@ void Robot::calculConsigne()
       {
         _tourneFini = true;
       }
-      this->_consigneDist->_consigne = this->_consigneDist->calculConsigne(this->_deltaDist);
+      this->_consigneDist->_consigne = this->_consigneDist->calculConsigne(this->_deltaDistMm);
       this->_consigneOrientation->calculConsigne(thetaDemande);
     }
   }
@@ -146,7 +143,7 @@ void Robot::calculConsigne()
   else if (_typeDeplacement == AvanceSeulement)
   {
     this->_consigneOrientation->_consigne = 0;
-    this->_consigneDist->calculConsigne(_deltaDist);
+    this->_consigneDist->calculConsigne(_deltaDistMm);
   }
   
   
@@ -170,50 +167,50 @@ void Robot::calculCommande()
   }
 	
     this->_pidDist
-      ->calculCommande(
+	  ->calculCommande(
         this->_consigneDist->_consigne, 
-        this->_consigneDist->transformeDeltaDistanceEnConsigne(this->_deltaDist)
+        this->_consigneDist->transformeDeltaDistanceEnConsigne(this->_deltaDistMm)
         );
     this->_pidOrientation
       ->calculCommande(
         this->_consigneOrientation->_consigne, 
-        this->_consigneOrientation->transformeDeltaDistanceEnConsigne(this->_deltaOrient * ENTRAXE)
+        this->_consigneOrientation->transformeDeltaDistanceEnConsigne(this->_deltaOrientRad * ENTRAXE_MM)
      );
     
-    // calcule des consignes
-    float commmandeRoueDroite = this->_pidDist->_commande + this->_pidOrientation->_commande;
-    float commmandeRoueGauche = this->_pidDist->_commande - this->_pidOrientation->_commande;
+	// calcule des commandes moteurs
+	float commandeRoueDroite = this->_pidDist->_commande + this->_pidOrientation->_commande;
+	float commandeRoueGauche = this->_pidDist->_commande - this->_pidOrientation->_commande;
 	
 	float rapportDroite = 1.0;
 	float rapportGauche = 1.0;
 	
-    if (fabs(commmandeRoueDroite) > CONSIGNE_MAX || fabs(commmandeRoueGauche) > CONSIGNE_MAX)
+	if (fabs(commandeRoueDroite) > COMMANDE_MOTEUR_MAX || fabs(commandeRoueGauche) > COMMANDE_MOTEUR_MAX)
 	{
-        if (fabs(commmandeRoueDroite) > fabs(commmandeRoueGauche))
+		if (fabs(commandeRoueDroite) > fabs(commandeRoueGauche))
 		{
 			rapportDroite = 1.0; 
-            rapportGauche = commmandeRoueDroite != 0 ? fabs(commmandeRoueGauche) / fabs(commmandeRoueDroite) : 1;
+			rapportGauche = commandeRoueDroite != 0 ? fabs(commandeRoueGauche) / fabs(commandeRoueDroite) : 1;
 		}
 		else
 		{
-            rapportDroite = commmandeRoueGauche != 0 ? fabs(commmandeRoueDroite) / fabs(commmandeRoueGauche) : 1;
+			rapportDroite = commandeRoueGauche != 0 ? fabs(commandeRoueDroite) / fabs(commandeRoueGauche) : 1;
 			rapportGauche = 1.0;
 		}
 	}
 
-	this->_commmandeRoueDroite = (int) (rapportDroite * this->filtreCommandeRoue(commmandeRoueDroite));
-	this->_commmandeRoueGauche = (int) (rapportGauche * this->filtreCommandeRoue(commmandeRoueGauche));
+	this->_commandeRoueDroite = (int) (rapportDroite * this->filtreCommandeRoue(commandeRoueDroite));
+	this->_commandeRoueGauche = (int) (rapportGauche * this->filtreCommandeRoue(commandeRoueGauche));
 }
 
 float Robot::filtreCommandeRoue(float value)
 {
-  if (value > CONSIGNE_MAX)
+  if (value > COMMANDE_MOTEUR_MAX)
   {
-    value = CONSIGNE_MAX;
+	value = COMMANDE_MOTEUR_MAX;
   }
-  else if (value < -CONSIGNE_MAX)
+  else if (value < -COMMANDE_MOTEUR_MAX)
   {
-      value = -CONSIGNE_MAX;
+	  value = -COMMANDE_MOTEUR_MAX;
   }
   
   if (this->_consigneDist->calcEstArrive() == true)
@@ -221,9 +218,9 @@ float Robot::filtreCommandeRoue(float value)
     value = 0;
   }
 
-  float commande = (VALEUR_MAX_PWM * (value + CONSIGNE_MAX) / (2 * CONSIGNE_MAX)) * RATIO_PWM;
+  float commande = (VALEUR_MAX_PWM * (value + COMMANDE_MOTEUR_MAX) / (2 * COMMANDE_MOTEUR_MAX)) * RATIO_PWM;
   
-  return commande > VALEUR_MAX_PWM ? VALEUR_MAX_PWM : commande;
+  return constrain(commande, 0, VALEUR_MAX_PWM);
 }
 
 void Robot::avanceDe(float avance, bool avecFreinage, float vitessMax) // en mm
@@ -234,7 +231,7 @@ void Robot::avanceDe(float avance, bool avecFreinage, float vitessMax) // en mm
 
 void Robot::tourneDe(float rotation, bool avecFreinage, float vitessMax) // en rad
 {
-  this->_consigneOrientation->setDemande(rotation * (float) ENTRAXE / 2.0, avecFreinage);
+  this->_consigneOrientation->setDemande(rotation * (float) ENTRAXE_MM / 2.0, avecFreinage);
   this->_consigneOrientation->setVmaxParcourt(vitessMax);
 }
 
@@ -309,42 +306,10 @@ false == recule
 */
 bool Robot::quelSens()
 {
-  if (this->_sensAvantRoueGauche == true && this->_sensAvantRoueDroite == true)
-  {
+  if (this->_commandeRoueGauche + this->_commandeRoueDroite > 0)
     return 1;
-  }
-  else if (this->_sensAvantRoueGauche == false && this->_sensAvantRoueDroite != false)
-  {
-    return 0;
-  }
   else
-  {
-    
-    return 2;
-    /*
-    if (this->_sensAvantRoueGauche == true)
-    {
-      if ( this->_commmandeRoueGauche > this->_commmandeRoueDroite)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }   
-    }
-    else
-    {
-      if ( this->_commmandeRoueGauche > this->_commmandeRoueDroite)
-      {
-        return false;
-      }
-      else
-      {
-        return true;
-      } 
-    }*/
-  }
+    return 0;
 }
 
 void Robot::attend(unsigned long attente) // tps ne milliseconde

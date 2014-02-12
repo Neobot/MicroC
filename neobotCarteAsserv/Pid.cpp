@@ -34,7 +34,7 @@ float PID::calculCommande(float consigne, float distanceRealiseEnNormeConsigne)
 	{
 		this->_erreur = this->_precedenteConsigne - distanceRealiseEnNormeConsigne;
 		this->_commande += this->_kp * this->_erreur - this->_kd * distanceRealiseEnNormeConsigne;
-        }
+	}
 	this->_precedenteConsigne = consigne;
 	
 	return this->_commande;

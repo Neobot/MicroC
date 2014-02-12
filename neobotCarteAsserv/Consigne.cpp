@@ -185,7 +185,7 @@ void Consigne::majDistAccDcc()
 
 void Consigne::majConsigneMax()
 {
-	this->_consigneMax = CONSIGNE_MAX * this->_vitessMaxParcourt / this->_vitessMax;
+	this->_consigneMax = COMMANDE_MOTEUR_MAX * this->_vitessMaxParcourt / this->_vitessMax;
 }
 
 void Consigne::majVariationConsigneMax(float distRestante)

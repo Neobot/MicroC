@@ -13,7 +13,8 @@ SOURCES += com.cpp \
             Point.cpp \
             Protocol.cpp \
             Robot.cpp \
-        Logger.cpp
+			Logger.cpp \
+			Simulation.cpp
 
 
 SOURCES += com.h \
@@ -22,7 +23,8 @@ SOURCES += com.h \
             Point.h \
             Protocol.h \
             Robot.h \
-            Logger.h
+			Logger.h \
+			Simulation.h
 
 
 

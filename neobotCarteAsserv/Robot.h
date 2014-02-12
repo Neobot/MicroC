@@ -25,8 +25,8 @@
  
 #define PI 3.1415926535897
 #define NB_PAS_TOUR 4096.0
-#define ENTRAXE 340.6 // mm
-#define DIAMETRE_ROUE 57.6 // en mm
+#define ENTRAXE_MM 340.6 // mm
+#define DIAMETRE_ROUE_MM 57.6 // en mm
 
 #define ACCELARATION_MAX_EN_REEL_ROT 0.004
 #define ACCELARATION_MAX_EN_REEL_LIN 0.004 // en mm/ms² ou pas : 0.003 * PERIODE_ASSERV_MS * PERIODE_ASSERV_MS * COEFF_CONVERTION_PAS_METRE // 1m/s² => 0.001 mm/ms² => 0.001*Te² mm mais comme on travaille en pas on multiplis pas le coeef de correction
@@ -49,12 +49,12 @@
 #define COEFF_CORRECTION_TAILLE_ROUE_FOLLE 1
 
 #define COEFF_CONVERTION_PAS_RADIAN NB_PAS_TOUR / (2.0 * PI) // 651.898646 pas / rad, valeur en 2011 : 1912
-#define COEFF_CONVERTION_PAS_METRE DIAMETRE_ROUE / (2.0 * COEFF_CONVERTION_PAS_RADIAN) // 22.6353 mm / pas , valeur en 2011 : 5.62 \\//  1 pas = PI*D/4096 ~ 0.000044178 m
+#define COEFF_CONVERTION_PAS_MM DIAMETRE_ROUE_MM / (2.0 * COEFF_CONVERTION_PAS_RADIAN) // 0.044178 mm / pas , valeur en 2011 : 5.62
 
-#define COEF_CORRECTION_ROUE_FOLLES 0.0 //0.0019 //plus la valeur est grande plus il part à gauche, valeur en 2011 : 0.0019
+#define COEF_CORRECTION_ROUE_FOLLES 0.0 // plus la valeur est grande plus il part à gauche, valeur en 2011 : 0.0019
 
-#define COEF_CORRECTION_ROUE_FOLLE_DROITE 1.0 + COEF_CORRECTION_ROUE_FOLLES / 2.0  //1.0003183F  //coef de corrections des valeurs envoyées par les roues folles
-#define COEF_CORRECTION_ROUE_FOLLE_GAUCHE 1.0 - COEF_CORRECTION_ROUE_FOLLES / 2.0  //0.9996817F  //coef de corrections des valeurs envoyées par les roues folles
+#define COEF_CORRECTION_ROUE_FOLLE_DROITE 1.0 + COEF_CORRECTION_ROUE_FOLLES / 2.0  // coef de corrections des valeurs envoyées par les roues folles
+#define COEF_CORRECTION_ROUE_FOLLE_GAUCHE 1.0 - COEF_CORRECTION_ROUE_FOLLES / 2.0  // coef de corrections des valeurs envoyées par les roues folles
 
 // Odometrie
 #define CORFUGE 0.0
@@ -122,15 +122,13 @@ class Robot
     TypeDeplacement _typeDeplacement;
     TypeAsserv _typeAsserv;
   
-    float _deltaDist;
-    float _deltaOrient;
+	float _deltaDistMm;
+	float _deltaOrientRad;
       
     float _thetaTotal; // angle non borné
 
-    int _commmandeRoueGauche;
-    bool _sensAvantRoueGauche;
-    int _commmandeRoueDroite;
-    bool _sensAvantRoueDroite;
+	int _commandeRoueGauche;
+	int _commandeRoueDroite;
     
     unsigned long tempsAttenteDeplacement;
     unsigned long debutAttenteDeplacement;
