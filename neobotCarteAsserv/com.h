@@ -12,6 +12,8 @@
 
 #include "Robot.h"
 
+#define MAX_PARAMETERS 10
+
 class Comm
 {
 
@@ -28,6 +30,7 @@ public:
   uint8_t* writeFloat(uint8_t* data, float value);
   
   void sendParameters();
+  void sendParameterNames();
   void sendAR(uint8_t instruction, bool ok);
   void sendSonars(int ag, int ad, int rg, int rd);
   void sendMicroswitch(bool left, bool right);
@@ -39,12 +42,29 @@ public:
   void sendIsArrived();
   void sendIsBlocked();
   void sendLog(const String& text);
-  void sendParameterNames();
   
   bool process_message(uint8_t data[], uint8_t instruction, uint8_t length);
   void comm_read();
-  
+
+  int registerParameter(float* value, const String& name);
+  int registerParameter(int* value, const String& name);
+
+private:
   Robot* robot;
+
+  struct Parameter
+  {
+      Parameter() : floatValue(0), intValue(0) {}
+      Parameter(float* value, const String& paramName) : floatValue(value), intValue(0), name(paramName) {}
+      Parameter(int* value, const String& paramName) : floatValue(0), intValue(value), name(paramName) {}
+
+      float* floatValue;
+      int* intValue;
+      String name;
+  };
+
+  Parameter _parameters[MAX_PARAMETERS];
+  int _nbRegisteredParameters;
 };
 
 #endif
