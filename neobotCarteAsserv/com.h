@@ -46,8 +46,8 @@ public:
   bool process_message(uint8_t data[], uint8_t instruction, uint8_t length);
   void comm_read();
 
-  int registerParameter(float* value, const String& name);
-  int registerParameter(int* value, const String& name);
+  void registerParameter(float* value, const String& name);
+  void registerParameter(int* value, const String& name);
 
 private:
   Robot* robot;

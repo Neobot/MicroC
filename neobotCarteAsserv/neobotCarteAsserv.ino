@@ -374,6 +374,13 @@ void setup()
     batCom = new Comm(batRobot);
     batLogger = new Logger(batCom, USE_PC_COMM_DEBUG);
 
+    //register parameters which can be changed trhough the comm
+    //Max number of parameters is currently 10, defined in com.h
+    batCom->registerParameter(&batRobot->_pidDist->_kp, "PID Distance P");
+    batCom->registerParameter(&batRobot->_pidDist->_kd, "PID Distance D");
+    batCom->registerParameter(&batRobot->_pidOrientation->_kp, "PID Orientation P");
+    batCom->registerParameter(&batRobot->_pidOrientation->_kd, "PID Orientation D");
+
 #ifdef SIMULATION
 	simMotorL = new Simulation(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, VALEUR_MAX_PWM, 1.4, 0.01);
 	simMotorR = new Simulation(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, VALEUR_MAX_PWM, 1.4, 0.01);

@@ -360,6 +360,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     {
         Serial.println("Ask parameters");
         sendParameters();
+        sendParameterNames(); //always include names, could be refined
         ok = true;
     }
     else if (instruction == INSTR_PING)
@@ -382,19 +383,19 @@ void Comm::comm_read()
     }
 }
 
-int Comm::registerParameter(float* value, const String& name)
+void Comm::registerParameter(float* value, const String& name)
 {
     if (_nbRegisteredParameters >= MAX_PARAMETERS)
-        return -1;
+        return;
 
     ++_nbRegisteredParameters;
     _parameters[_nbRegisteredParameters] =  Parameter(value, name);
 }
 
-int Comm::registerParameter(int* value, const String& name)
+void Comm::registerParameter(int* value, const String& name)
 {
     if (_nbRegisteredParameters >= MAX_PARAMETERS)
-        return -1;
+        return;
 
     ++_nbRegisteredParameters;
     _parameters[_nbRegisteredParameters] =  Parameter(value, name);
