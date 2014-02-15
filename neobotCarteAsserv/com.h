@@ -12,6 +12,8 @@
 
 #include "Robot.h"
 
+class Logger;
+
 #define MAX_PARAMETERS 10
 
 class Comm
@@ -19,6 +21,8 @@ class Comm
 
 public:
   Comm(Robot* r);
+
+  void setLogger(Logger* logger);
 
   uint8_t* readInt8(uint8_t* data, uint8_t& value);
   uint8_t* readInt16(uint8_t* data, short& value);
@@ -51,6 +55,7 @@ public:
 
 private:
   Robot* robot;
+  Logger* _logger;
 
   struct Parameter
   {

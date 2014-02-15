@@ -10,6 +10,7 @@
 #include "com.h"
 #include "Point.h"
 #include "Protocol.h"
+#include "Logger.h"
 
 #define INSTR_COORD 100
 #define INSTR_ISARRIVED 102
@@ -38,8 +39,13 @@ const float ANGLE_FACTOR = 1000.0;
 
 Protocol protocol;
 
-Comm::Comm(Robot* r) : robot(r), _nbRegisteredParameters(0)
+Comm::Comm(Robot* r) : robot(r), _logger(0), _nbRegisteredParameters(0)
 {
+}
+
+void Comm::setLogger(Logger *logger)
+{
+    _logger = logger;
 }
 
 uint8_t* Comm::readInt8(uint8_t* data, uint8_t& value)
@@ -277,13 +283,22 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
         robot->ajoutPoint(p);
         ok = true;
-        Serial.print("AddPos received : ");
-        Serial.println(x);
-        Serial.println(y);
-        Serial.println(p.theta);
-        Serial.println((Point::TypeAsserv)typeAsserv);
-        Serial.println(p.pointArret);
-        Serial.println(p.typeDeplacement);
+
+        if (_logger)
+        {
+            _logger->print("AddPos received : ");
+            _logger->print(x);
+            _logger->print(", ");
+            _logger->print(y);
+            _logger->print(", ");
+            _logger->print(p.theta);
+            _logger->print(", ");
+            _logger->print((Point::TypeAsserv)typeAsserv);
+            _logger->print(", ");
+            _logger->print(p.pointArret);
+            _logger->print(", ");
+            _logger->println(p.typeDeplacement);
+        }
     }
     else if (instruction == INSTR_SET_POS && length == 6)
     {
@@ -302,17 +317,26 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
         robot->teleport(p);
         ok = true;
-        Serial.print("SetPos received : ");
-        Serial.print(x);
-        Serial.print(y);
-        Serial.println(p.theta);
+
+        if (_logger)
+        {
+            _logger->print("SetPos received : ");
+            _logger->print(x);
+            _logger->print(", ");
+            _logger->print(y);
+            _logger->print(", ");
+            _logger->println(p.theta);
+        }
     }
     else if (instruction == INSTR_FLUSH)
     {
         //stop the robot and flush the remaining list of point
         robot->stop();
         ok = true;
-        Serial.println("Flush received");
+        if (_logger)
+        {
+            _logger->println("Flush received");
+        }
     }
     else if (instruction == INSTR_ACTION && length == 3)
     {
@@ -338,7 +362,10 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     }
     else if (instruction == INSTR_SET_PARAMETERS)
     {
-        Serial.println("Set parameters");
+        if (_logger)
+        {
+            _logger->println("Set parameters");
+        }
 
         uint8_t nbParameters = 0;
         data = readInt8(data, nbParameters);
@@ -358,14 +385,22 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     }
     else if (instruction == INSTR_ASK_PARAMETERS)
     {
-        Serial.println("Ask parameters");
+        if (_logger)
+        {
+            _logger->println("Ask parameters");
+        }
+
         sendParameters();
         sendParameterNames(); //always include names, could be refined
         ok = true;
     }
     else if (instruction == INSTR_PING)
     {
-        Serial.println("PING");
+        if (_logger)
+        {
+            _logger->println("PING");
+        }
+
         robot->_pingReceived = true;
         ok = true;
     }

@@ -48,6 +48,7 @@
 //#define DEBUG_ULTRASON
 //#define DEBUG_COUNTDOWN
 #define DEBUG_NO_JACK
+//#define DEBUG_RECEIVED_COMM_INSTRUCTION
 
 #define SIMULATION
 #define NO_TPS_MATCH
@@ -369,6 +370,10 @@ void setup()
 
     Serial.begin(115200);
     //SerialUSB.begin(115200);
+
+#ifdef DEBUG_RECEIVED_COMM_INSTRUCTION
+    batCom.setLogger(&batLogger);
+#endif
 
     //register parameters which can be changed trhough the comm
     //Max number of parameters is currently 10, defined in com.h
