@@ -107,11 +107,11 @@ class Robot
     float pasPrecendentGauche;
     float pasPrecendentDroit;
     
-    PID *_pidDist;
-    PID *_pidOrientation;
+    PID _pidDist;
+    PID _pidOrientation;
     
-    Consigne *_consigneDist;
-    Consigne *_consigneOrientation;
+    Consigne _consigneDist;
+    Consigne _consigneOrientation;
 
     QueueList<Point> queue;
     Point pointSuivant;
