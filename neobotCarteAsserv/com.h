@@ -24,13 +24,16 @@ public:
 
   void setLogger(Logger* logger);
 
-  uint8_t* readInt8(uint8_t* data, uint8_t& value);
-  uint8_t* readInt16(uint8_t* data, short& value);
-  uint8_t* readInt32(uint8_t* data, long& value);
+  uint8_t* readInt8(uint8_t* data, int8_t& value);
+  uint8_t* readInt16(uint8_t* data, int16_t& value);
+  uint8_t* readInt32(uint8_t* data, int32_t& value);
+  uint8_t* readUInt8(uint8_t* data, uint8_t& value);
+  uint8_t* readUInt16(uint8_t* data, uint16_t& value);
+  uint8_t* readUInt32(uint8_t* data, uint32_t& value);
   uint8_t* readFloat(uint8_t* data, float& value);
   uint8_t* writeInt8(uint8_t* data, uint8_t value);
-  uint8_t* writeInt16(uint8_t* data, short value);
-  uint8_t* writeInt32(uint8_t* data, long value);
+  uint8_t* writeInt16(uint8_t* data, uint16_t value);
+  uint8_t* writeInt32(uint8_t* data, uint32_t value);
   uint8_t* writeFloat(uint8_t* data, float value);
   
   void sendParameters();

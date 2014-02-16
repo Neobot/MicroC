@@ -48,28 +48,43 @@ void Comm::setLogger(Logger *logger)
     _logger = logger;
 }
 
-uint8_t* Comm::readInt8(uint8_t* data, uint8_t& value)
+uint8_t* Comm::readUInt8(uint8_t* data, uint8_t& value)
 {
     value = data[0];
     return data + 1;
 }
 
-uint8_t* Comm::readInt16(uint8_t* data, short& value)
+uint8_t* Comm::readUInt16(uint8_t* data, uint16_t& value)
 {
-    value = ((short)data[0] << 8) + (short)data[1];
+    value = ((uint16_t)(data[0] << 8)) + (uint16_t)(data[1]);
     return data + 2;
 }
 
-uint8_t* Comm::readInt32(uint8_t* data, long& value)
+uint8_t* Comm::readUInt32(uint8_t* data, uint32_t& value)
 {
-    value = ((long)data[0] << 24) + ((long)data[1] << 16) + ((long)data[2] << 8) + (long)data[3];
+    value = ((uint32_t)(data[0] << 24)) + ((uint32_t)(data[1] << 16)) + ((uint32_t)(data[2] << 8)) + (uint32_t)data[3];
     return data + 4;
+}
+
+uint8_t* Comm::readInt8(uint8_t* data, int8_t& value)
+{
+    return readUInt8(data, (uint8_t&)value);
+}
+
+uint8_t* Comm::readInt16(uint8_t* data, int16_t& value)
+{
+    return readUInt16(data, (uint16_t&)value);
+}
+
+uint8_t* Comm::readInt32(uint8_t* data, int32_t& value)
+{
+    return readUInt32(data, (uint32_t&)value);
 }
 
 uint8_t* Comm::readFloat(uint8_t* data, float& value)
 {
-    long iValue = 0;
-    uint8_t* res = readInt32(data, iValue);
+    uint32_t iValue = 0;
+    uint8_t* res = readUInt32(data, iValue);
     value = *((float*)&iValue);
     return res;
 }
@@ -80,25 +95,25 @@ uint8_t* Comm::writeInt8(uint8_t* data, uint8_t value)
     return data + 1;
 }
 
-uint8_t* Comm::writeInt16(uint8_t* data, short value)
+uint8_t* Comm::writeInt16(uint8_t* data, uint16_t value)
 {
-    data[0] = (uint8_t)((short)value >> 8);
-    data[1] = (uint8_t)((short)value % 256);
+    data[0] = (uint8_t)(value >> 8);
+    data[1] = (uint8_t)(value % 256);
     return data + 2;
 }
 
-uint8_t* Comm::writeInt32(uint8_t* data, long value)
+uint8_t* Comm::writeInt32(uint8_t* data, uint32_t value)
 {
-    data[0] = (long)value >> 24;
-    data[1] = ((long)value >> 16) % 256;
-    data[2] = ((long)value >> 8) % 256;
-    data[3] = value % 256;
+    data[0] = (uint8_t)(value >> 24);
+    data[1] = (uint8_t)((value >> 16) % 256);
+    data[2] = (uint8_t)((value >> 8) % 256);
+    data[3] = (uint8_t)(value % 256);
     return data + 4;
 }
 
 uint8_t* Comm::writeFloat(uint8_t* data, float value)
 {
-    long iValue = *((long*)&value);
+    uint32_t iValue = *((uint32_t*)&value);
     uint8_t* res = writeInt32(data, iValue);
     return res;
 }
@@ -115,7 +130,7 @@ void Comm::sendParameterNames()
         names += _parameters[i].name;
     }
 
-    int len = names.length();
+    int len = names.length() + 1;
     char data[len];
     names.toCharArray(data, len);
 
@@ -124,7 +139,7 @@ void Comm::sendParameterNames()
 
 void Comm::sendParameters()
 {
-    uint8_t data[MAX_PARAMETERS * 4];
+    uint8_t data[MAX_PARAMETERS * 4 + 1];
     uint8_t* dataPtr = &(data[0]);
 
     dataPtr = writeInt8(dataPtr, _nbRegisteredParameters);
@@ -241,7 +256,7 @@ void Comm::sendIsBlocked()
 
 void Comm::sendLog(const String& text)
 {
-    int len = text.length();
+    int len = text.length() + 1;
     char data[len];
     text.toCharArray(data, len);
 
@@ -256,7 +271,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     {
         //add a point
         Point p;
-        short x, y, theta;
+        int16_t x, y, theta;
         uint8_t typeAsserv;
         uint8_t typeDeplacement;
         uint8_t speed;
@@ -264,9 +279,9 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
         data = readInt16(data, x);
         data = readInt16(data, y);
         data = readInt16(data, theta);
-        data = readInt8(data, typeAsserv);
-        data = readInt8(data, typeDeplacement);
-        data = readInt8(data, speed);
+        data = readUInt8(data, typeAsserv);
+        data = readUInt8(data, typeDeplacement);
+        data = readUInt8(data, speed);
 
         p.x = x;
         p.y = y;
@@ -303,7 +318,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     else if (instruction == INSTR_SET_POS && length == 6)
     {
         //set the start point
-        short x, y, thetaInt;
+        int16_t x, y, thetaInt;
 
         data = readInt16(data, x);
         data = readInt16(data, y);
@@ -342,8 +357,8 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     {
         uint8_t actionType;
         uint8_t parameter;
-        data = readInt8(data, parameter);
-        data = readInt8(data, actionType);
+        data = readUInt8(data, parameter);
+        data = readUInt8(data, actionType);
 
         switch (parameter)
         {
@@ -368,7 +383,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
         }
 
         uint8_t nbParameters = 0;
-        data = readInt8(data, nbParameters);
+        data = readUInt8(data, nbParameters);
         for(int i = 0; i < nbParameters && i < _nbRegisteredParameters; ++i)
         {
             float value;
