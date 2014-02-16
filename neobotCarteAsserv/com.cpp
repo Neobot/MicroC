@@ -28,7 +28,7 @@
 #define INSTR_CONSIGNE 104
 #define INSTR_LOG 124
 #define INSTR_SEND_PARAMETERS 125
-#define INSTR_SEND_PARAMETERS_NAMES 125
+#define INSTR_SEND_PARAMETERS_NAMES 126
 #define INSTR_SET_PARAMETERS 50
 #define INSTR_ASK_PARAMETERS 51
 #define INSTR_PING 254
@@ -134,7 +134,7 @@ void Comm::sendParameterNames()
     char data[len];
     names.toCharArray(data, len);
 
-    protocol.sendMessage(INSTR_SEND_PARAMETERS_NAMES, len, (uint8_t*)data);
+	protocol.sendMessage(INSTR_SEND_PARAMETERS_NAMES, len, (uint8_t*)data);
 }
 
 void Comm::sendParameters()
@@ -155,7 +155,7 @@ void Comm::sendParameters()
         dataPtr = writeFloat(dataPtr, value);
     }
 
-    protocol.sendMessage(INSTR_SEND_PARAMETERS, _nbRegisteredParameters * 4 + 1, data);
+	protocol.sendMessage(INSTR_SEND_PARAMETERS, _nbRegisteredParameters * 4 + 1, data);
 }
 
 void Comm::sendAR(uint8_t instruction, bool ok)
@@ -438,8 +438,8 @@ void Comm::registerParameter(float* value, const String& name)
     if (_nbRegisteredParameters >= MAX_PARAMETERS)
         return;
 
-    ++_nbRegisteredParameters;
     _parameters[_nbRegisteredParameters] =  Parameter(value, name);
+	++_nbRegisteredParameters;
 }
 
 void Comm::registerParameter(int* value, const String& name)
@@ -447,6 +447,6 @@ void Comm::registerParameter(int* value, const String& name)
     if (_nbRegisteredParameters >= MAX_PARAMETERS)
         return;
 
-    ++_nbRegisteredParameters;
     _parameters[_nbRegisteredParameters] =  Parameter(value, name);
+	++_nbRegisteredParameters;
 }

@@ -368,9 +368,6 @@ void setup()
     pinMode(PIN_JACK, INPUT);
     pinMode(PIN_INTERRUPTEUR_COULEUR, INPUT);
 
-    Serial.begin(115200);
-    //SerialUSB.begin(115200);
-
 #ifdef DEBUG_RECEIVED_COMM_INSTRUCTION
     batCom.setLogger(&batLogger);
 #endif
@@ -385,7 +382,6 @@ void setup()
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
 
-    //Serial.println("He we gooooo");
     //batRobot.MAJContaineur(true, 3);
     //batRobot.MAJContaineur(false, 3);
 
@@ -399,7 +395,9 @@ void setup()
     //batRobot.ajoutPoint(800, -0, false);
     //batRobot.ajoutPoint(1000, -50, true);
 
-    //int restartBtn = digitalRead(PIN_RESTART);
+	Serial.begin(115200);
+
+	//int restartBtn = digitalRead(PIN_RESTART);
     //int oldRestartBtnValue = digitalRead(PIN_RESTART);
 
     /* while(!batRobot._pingReceived)
@@ -415,18 +413,18 @@ void setup()
 
   }*/
 
-	batLogger.println("Restart Arduino");
+	batLogger.println("Restart arduino");
 
 #ifdef SIMULATION
 	batLogger.println("Mode : Simulation");
 #endif
 
 #ifndef NO_TPS_MATCH
-	batLogger.print("Temps de match : ");
+	batLogger.print("Match duration : ");
 	batLogger.print(TPS_MATCH / 1000);
-	batLogger.println(" secondes");
+	batLogger.println(" seconds");
 #else
-	batLogger.println("Timer de match désactivé");
+	batLogger.println("Match timer disabled");
 #endif
 
 #ifndef NO_JACK
@@ -436,7 +434,7 @@ void setup()
 
 	if (!jackPlugged)
 	{
-		batLogger.println("Veuillez connecter le jack");
+		batLogger.println("Please plug the jack");
 
 		while(!jackPlugged)
 			jackPlugged = digitalRead(PIN_JACK) == LOW;
@@ -444,7 +442,7 @@ void setup()
 
 	delay(2000);
 
-	batLogger.println("Veuillez de-plugger le jack");
+	batLogger.println("Please unplug the jack");
     
     while(jackPlugged)
         jackPlugged = digitalRead(PIN_JACK) == LOW;
@@ -452,15 +450,8 @@ void setup()
 
 	bool estJaune = readColor();
 
-	batLogger.print("Couleur sélectionnée : ");
-	batLogger.println(estJaune ? "Jaune" : "Rouge");
-
-	batLogger.print("Position initiale du robot :");
-	batLogger.print(batRobot.position.x);
-    batLogger.print(" ");
-    batLogger.print(batRobot.position.y);
-    batLogger.print(" ");
-	batLogger.println(batRobot.position.theta);
+	batLogger.print("Selected color: ");
+	batLogger.println(estJaune ? "Yellow" : "Red");
 
 #ifdef COUNTDOWN
     for(int i = 5; i > 0; --i)
@@ -500,7 +491,7 @@ void loop()
     if (commEcrit.ready())
     {
         batCom.sendPosition();
-        litEtEnvoieSonar();
+	   // litEtEnvoieSonar();
     }
 #endif
 
@@ -577,7 +568,7 @@ void loop()
             digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, LOW);
             digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, LOW);
 
-            batLogger.println("C'est fini");
+			batLogger.println("Timer elapsed - end of match");
 
     #ifdef DEBUG_POSITION
             //if (batRobot._consigneDist.calcEstArrive() == false)
