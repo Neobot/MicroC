@@ -41,10 +41,10 @@
 
 /************* DEBUG ***************/
 
-#define DEBUG_ENCODER
-#define DEBUG_POSITION
-#define DEBUG_CONSIGNE_LIN
-#define DEBUG_CONSIGNE_ROT
+//#define DEBUG_ENCODER
+//#define DEBUG_POSITION
+//#define DEBUG_CONSIGNE_LIN
+//#define DEBUG_CONSIGNE_ROT
 //#define DEBUG_ULTRASON
 //#define DEBUG_COUNTDOWN
 #define DEBUG_NO_JACK
@@ -52,8 +52,8 @@
 
 #define SIMULATION
 #define NO_TPS_MATCH
-#define NO_COMM
-#define USE_PC_COMM_DEBUG false //if true, debug is sent to the PC through the "sendLog" instruction
+//#define NO_COMM
+#define USE_PC_COMM_DEBUG true //if true, debug is sent to the PC through the "sendLog" instruction
 
 
 
@@ -382,7 +382,7 @@ void setup()
     batCom.registerParameter(&batRobot._pidOrientation._kp, "PID Orientation P");
     batCom.registerParameter(&batRobot._pidOrientation._kd, "PID Orientation D");
 
-    batLogger.println("Veuillez plugger le jack.");
+	batLogger.println("Veuillez plugger le jack.");
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
@@ -394,7 +394,7 @@ void setup()
     //servoArG.detach();
     //servoArD.detach();
 
-    batRobot.ajoutPoint(200, -50, false);
+	//batRobot.ajoutPoint(200, -50, false);
     //batRobot.ajoutPoint(300, 0, true);
     //batRobot.ajoutPoint(400, 0, false);
     //batRobot.ajoutPoint(600, -50, false);

@@ -9,7 +9,7 @@ Protocol::Protocol()
 
 void Protocol::sendMessage(uint8_t instruction, uint8_t length, uint8_t data[], uint8_t id) const
 {
-    uint8_t frameData[20];
+	uint8_t frameData[length + 5];
     int i;
     uint8_t checksum;
 
