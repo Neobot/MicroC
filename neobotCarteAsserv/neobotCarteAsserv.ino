@@ -10,7 +10,7 @@
 /*
  * Project : Neobot
  * Version : 0.42
- * Date : 17/04/2012
+ * Date : Today
  * Author : Neobot
  */
 
@@ -21,7 +21,7 @@
  * !!!!!! IMPORTANT !!!!!!
  *
  *  Ne pas oublier de changer la frequence de la pwm dans :
- *   arduino-1.5.4\hardware\arduino\sam\variants\arduino_due_x\variant.h L182
+ *   arduino-1.5.5\hardware\arduino\sam\variants\arduino_due_x\variant.h L182
  *
  * !!!!!! IMPORTANT !!!!!!
  */
@@ -39,27 +39,39 @@
 #include "Simulation.h"
 
 
-/************* DEBUG ***************/
+/*********************************************************************************/
+/*                                  Config                                       */
+/*********************************************************************************/
 
+//#define COUNTDOWN
+//#define DEBUG_RECEIVED_COMM_INSTRUCTION
+#define NO_JACK
+#define SIMULATION						// simulates motors & robot movements
+#define NO_TPS_MATCH
+
+#define ENABLE_DEBUG		true		// if false, disable all logging
+#define ENABLE_PC_COMM		true		// enable comm to PC and redirect debug messages to PC
 //#define DEBUG_ENCODER
 //#define DEBUG_POSITION
 //#define DEBUG_CONSIGNE_LIN
 //#define DEBUG_CONSIGNE_ROT
 //#define DEBUG_ULTRASON
-//#define DEBUG_COUNTDOWN
-#define DEBUG_NO_JACK
-//#define DEBUG_RECEIVED_COMM_INSTRUCTION
-
-#define SIMULATION
-#define NO_TPS_MATCH
-//#define NO_COMM
-#define USE_PC_COMM_DEBUG true //if true, debug is sent to the PC through the "sendLog" instruction
 
 
+#define VALEUR_MAX_PWM 4095.0
 
-/*****************************************************
- *                   Config                          *
- *****************************************************/
+#define PERIODE_ASSERV_MS 5.0
+#define PERIODE_COM_LECTURE 50.0
+#define PERIODE_COM_ECRITURE 50.0
+
+#define TPS_MATCH 90000
+
+#define PI 3.1415926535897
+#define NB_PAS_TOUR 4096.0
+#define DIAMETRE_ROUE_MM 57.6
+#define COEFF_CONVERTION_PAS_RADIAN NB_PAS_TOUR / (2.0 * PI)
+#define COEFF_CONVERTION_PAS_MM DIAMETRE_ROUE_MM / (2.0 * COEFF_CONVERTION_PAS_RADIAN)
+
 
 #define PIN_SERVO_1 4
 #define PIN_SERVO_2 5
@@ -126,50 +138,37 @@
 #define PIN_SONAR_AR_G 8
 #define PIN_SONAR_AR_D 9
 
-// parameters
-#define VALEUR_MAX_PWM 4095.0
 
-#define PERIODE_ASSERV_MS 5.0
-#define PERIODE_COM_LECTURE 50.0
-#define PERIODE_COM_ECRITURE 50.0
-
-#define TPS_MATCH 90000
-
-#define PI 3.1415926535897
-#define NB_PAS_TOUR 4096.0
-#define DIAMETRE_ROUE_MM 57.6
-#define COEFF_CONVERTION_PAS_RADIAN NB_PAS_TOUR / (2.0 * PI)
-#define COEFF_CONVERTION_PAS_MM DIAMETRE_ROUE_MM / (2.0 * COEFF_CONVERTION_PAS_RADIAN)
-
-
-/************* Task ***************/
+/*********************************************************************************/
+/*                              Global objects                                   */
+/*********************************************************************************/
 
 Task asservissement(PERIODE_ASSERV_MS);
 Task commLect(PERIODE_COM_LECTURE);
 Task commEcrit(PERIODE_COM_ECRITURE);
-
-/************* Global ***************/
 
 Servo servoArG;
 Servo servoArD;
 
 Robot batRobot(&servoArG, &servoArD, PERIODE_ASSERV_MS);
 Comm batCom(&batRobot);
-Logger batLogger(&batCom, USE_PC_COMM_DEBUG);
+Logger batLogger(&batCom, ENABLE_DEBUG, ENABLE_PC_COMM);
 
 #ifdef SIMULATION
     Simulation simMotorL(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, VALEUR_MAX_PWM, 1.4, 0.01);
     Simulation simMotorR(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, VALEUR_MAX_PWM, 1.4, 0.01);
 #endif
 
-bool estJaune = true;
 
 unsigned int initEncodeurG;
 unsigned int initEncodeurD;
 
 unsigned long tempsMatch;
 
-/************* Function ***************/
+
+/*********************************************************************************/
+/*                                 Functions                                     */
+/*********************************************************************************/
 
 unsigned int readOneEncodeurWord()
 {
@@ -281,7 +280,7 @@ void litEtEnvoieSonar()
     batLogger.println(" ");
 #endif
 
-#ifndef NO_COMM
+#ifndef NO_PC_COMM
     batCom.sendSonars(ag, ad, rg, rd);
 #endif
 }
@@ -317,9 +316,10 @@ int readColor()
     return color;
 }
 
-/*****************************/
-/* Initialisation du syteme  */
-/*****************************/
+
+/*********************************************************************************/
+/*                               Initialisation                                  */
+/*********************************************************************************/
 
 void setup()
 {
@@ -382,8 +382,6 @@ void setup()
     batCom.registerParameter(&batRobot._pidOrientation._kp, "PID Orientation P");
     batCom.registerParameter(&batRobot._pidOrientation._kd, "PID Orientation D");
 
-	batLogger.println("Veuillez plugger le jack.");
-
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
 
@@ -417,34 +415,54 @@ void setup()
 
   }*/
 
+	batLogger.println("Restart Arduino");
 
-#ifndef DEBUG_NO_JACK
-    setLedRGB(0, 255, 0);	// vert
-    bool jackPlugged = true;
-
-    //delay(2000);
-    batLogger.println("Veuillez de-plugger le jack.");
-    
-    while(jackPlugged)
-    {
-        estJaune = readColor();
-        jackPlugged = digitalRead(PIN_JACK) == LOW;
-    }
-#else
-    estJaune = readColor();
+#ifdef SIMULATION
+	batLogger.println("Mode : Simulation");
 #endif
 
-    batLogger.println("Here we gooooo");
-    batLogger.print(batRobot.position.x);
+#ifndef NO_TPS_MATCH
+	batLogger.print("Temps de match : ");
+	batLogger.print(TPS_MATCH / 1000);
+	batLogger.println(" secondes");
+#else
+	batLogger.println("Timer de match désactivé");
+#endif
+
+#ifndef NO_JACK
+    setLedRGB(0, 255, 0);	// vert
+
+	bool jackPlugged = digitalRead(PIN_JACK) == LOW;
+
+	if (!jackPlugged)
+	{
+		batLogger.println("Veuillez connecter le jack");
+
+		while(!jackPlugged)
+			jackPlugged = digitalRead(PIN_JACK) == LOW;
+	}
+
+	delay(2000);
+
+	batLogger.println("Veuillez de-plugger le jack");
+    
+    while(jackPlugged)
+        jackPlugged = digitalRead(PIN_JACK) == LOW;
+#endif
+
+	bool estJaune = readColor();
+
+	batLogger.print("Couleur sélectionnée : ");
+	batLogger.println(estJaune ? "Jaune" : "Rouge");
+
+	batLogger.print("Position initiale du robot :");
+	batLogger.print(batRobot.position.x);
     batLogger.print(" ");
     batLogger.print(batRobot.position.y);
     batLogger.print(" ");
-    batLogger.print(batRobot.position.theta);
-    batLogger.println(" ");
+	batLogger.println(batRobot.position.theta);
 
-    batLogger.println("");
-
-#ifdef DEBUG_COUNTDOWN
+#ifdef COUNTDOWN
     for(int i = 5; i > 0; --i)
     {
         batLogger.println(i);
@@ -458,14 +476,22 @@ void setup()
     batRobot.passageAuPointSuivant();
     batRobot.vaVersPointSuivant();
 
-#ifndef NO_COMM
+	batLogger.println("Here we gooooo!");
+
+#ifndef NO_PC_COMM
     batCom.sendGo(estJaune);
 #endif
 }
 
+
+/*********************************************************************************/
+/*                                 Main loop                                     */
+/*********************************************************************************/
+
+
 void loop()
 {
-#ifndef NO_COMM
+#ifndef NO_PC_COMM
     if (commLect.ready())
     {
         batCom.comm_read();
@@ -486,7 +512,7 @@ void loop()
         batRobot.calculCommande();
         envoiConsigne();
 
-#ifndef NO_COMM
+#ifndef NO_PC_COMM
         if(batRobot.passageAuPointSuivant())
         {
             batCom.sendConsigne();

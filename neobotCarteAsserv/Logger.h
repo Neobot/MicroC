@@ -6,7 +6,7 @@
 class Logger
 {
 public:
-    Logger(Comm* comm, bool useComm);
+	Logger(Comm* comm, bool enableDebug, bool useComm);
 
     void useComm(bool use);
 
@@ -22,7 +22,7 @@ public:
 private:
     Comm* _comm;
     String _partialString;
-    bool _useComm;
+	bool _enable, _useComm;
 };
 
 #endif // LOGGER_H
