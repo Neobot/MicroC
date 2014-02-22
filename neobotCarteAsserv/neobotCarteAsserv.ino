@@ -240,15 +240,6 @@ void envoiConsigne()
 #endif
 }
 
-
-int seuil(int mini, int value, int maxi)
-{
-    value = max(mini, value);
-    value = min(maxi, value);
-
-    return value;
-}
-
 void litEtEnvoieSonar()
 {
     int ag = analogRead(PIN_SONAR_AV_G);
@@ -258,10 +249,10 @@ void litEtEnvoieSonar()
 
     int valmax = 397;
 
-    ag = seuil(0, ag, valmax);
-    ad = seuil(0, ad, valmax);
-    rg = seuil(0, rg, valmax);
-    rd = seuil(0, rd, valmax);
+	ag = constrain(ag, 0, valmax);
+	ad = constrain(ad, 0, valmax);
+	rg = constrain(rg, 0, valmax);
+	rd = constrain(rd, 0, valmax);
 
     ag = map(ag, 0, valmax, 0, 255);
     ad = map(ad, 0, valmax, 0, 255);
@@ -292,9 +283,9 @@ void bougeServo()
 
 void setLedRGB(int r, int g, int b)
 {
-    r = seuil(0, r, 255);
-    g = seuil(0, g, 255);
-    b = seuil(0, b, 255);
+	r = constrain(r, 0, 255);
+	g = constrain(g, 0, 255);
+	b = constrain(b, 0, 255);
 
     r = map(r, 0, 255, 0, VALEUR_MAX_PWM);
     g = map(g, 0, 255, 0, VALEUR_MAX_PWM);
