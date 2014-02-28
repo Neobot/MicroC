@@ -117,7 +117,7 @@ tcs34725Gain_t;
 
 class Adafruit_TCS34725 {
 public:
-    Adafruit_TCS34725(tcs34725IntegrationTime_t = TCS34725_INTEGRATIONTIME_2_4MS, tcs34725Gain_t = TCS34725_GAIN_1X);
+    Adafruit_TCS34725(TwoWire* wire, tcs34725IntegrationTime_t = TCS34725_INTEGRATIONTIME_2_4MS, tcs34725Gain_t = TCS34725_GAIN_1X);
     
     boolean  begin(void);
     void     setIntegrationTime(tcs34725IntegrationTime_t it);
@@ -139,7 +139,7 @@ private:
     boolean _tcs34725Initialised;
     tcs34725Gain_t _tcs34725Gain;
     tcs34725IntegrationTime_t _tcs34725IntegrationTime;
-    
+    TwoWire* _wire;
 };
 
 #endif

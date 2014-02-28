@@ -12,7 +12,7 @@
 // Adafruit_TCS34725 tcs = Adafruit_TCS34725();
 
 /* Initialise with specific int time and gain values */
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_154MS, TCS34725_GAIN_1X);
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(&Wire, TCS34725_INTEGRATIONTIME_154MS, TCS34725_GAIN_1X);
 
 void setup(void) {
   Serial.begin(115200);
