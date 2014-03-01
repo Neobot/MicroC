@@ -79,8 +79,8 @@
 #define PIN_SERVO_4 7
 
 #define PIN_PWM_COLOR_R 2
-#define PIN_PWM_COLOR_B 3
-#define PIN_PWM_COLOR_G 10
+#define PIN_PWM_COLOR_G 3
+#define PIN_PWM_COLOR_B 10
 
 #define UM6_1 16
 #define UM6_2 17
