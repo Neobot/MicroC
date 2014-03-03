@@ -15,23 +15,13 @@
  */
 
 
-
-/* 
- *
- * !!!!!! IMPORTANT !!!!!!
- *
- *  Ne pas oublier de changer la frequence de la pwm dans :
- *   arduino-1.5.5\hardware\arduino\sam\variants\arduino_due_x\variant.h L182
- *
- * !!!!!! IMPORTANT !!!!!!
- */
-
-
 //#include <arduino.h>
 #include <math.h>
 #include <Servo.h>
 #include "QueueList.h" // fifo
 #include <Task.h>
+#include "pwm01.h"
+
 #include "Protocol.h"
 #include "Robot.h"
 #include "com.h"
@@ -58,7 +48,8 @@
 //#define DEBUG_ULTRASON
 
 
-#define VALEUR_MAX_PWM 4095.0
+#define MAX_PWM 4095.0
+#define MAX_PWM_MOTORS 65535.0
 
 #define PERIODE_ASSERV_MS 5.0
 #define PERIODE_COM_LECTURE 50.0
@@ -78,9 +69,9 @@
 #define PIN_SERVO_3 6
 #define PIN_SERVO_4 7
 
-#define PIN_PWM_COLOR_R 2
-#define PIN_PWM_COLOR_G 3
-#define PIN_PWM_COLOR_B 10
+#define PIN_PWM_COLOR_R 2		//ok
+#define PIN_PWM_COLOR_G 3		//ok
+#define PIN_PWM_COLOR_B 10		//ok
 
 #define UM6_1 16
 #define UM6_2 17
@@ -89,7 +80,7 @@
 #define PIN_BOUTON_1 23
 #define PIN_BOUTON_2 51
 
-#define PIN_INTERRUPTEUR_COULEUR 24
+#define PIN_INTERRUPTEUR_COULEUR 24			//ok
 
 #define PIN_CONTACTEUR_1 25
 #define PIN_CONTACTEUR_2 26
@@ -98,12 +89,12 @@
 #define PIN_CONTACTEUR_5 29
 #define PIN_CONTACTEUR_6 30
 
-#define PIN_MOTEUR_GAUCHE_SENS 8
-#define PIN_MOTEUR_GAUCHE_PWM_DIGITAL 31
-#define PIN_MOTEUR_GAUCHE_BREAK 32
-#define PIN_MOTEUR_DROITE_SENS 9
-#define PIN_MOTEUR_DROITE_PWM_DIGITAL 33
-#define PIN_MOTEUR_DROITE_BREAK 34
+#define PIN_MOTEUR_GAUCHE_SENS 9			//ok
+#define PIN_MOTEUR_GAUCHE_PWM_DIGITAL 29	//ok
+#define PIN_MOTEUR_GAUCHE_BREAK 28			//ok
+#define PIN_MOTEUR_DROITE_SENS 8			//ok
+#define PIN_MOTEUR_DROITE_PWM_DIGITAL 27	//ok
+#define PIN_MOTEUR_DROITE_BREAK 26			//ok
 
 //FPGA
 #define PIN_FPGA_BIT11 38
@@ -155,8 +146,8 @@ Comm batCom(&batRobot);
 Logger batLogger(&batCom, ENABLE_DEBUG, ENABLE_PC_COMM);
 
 #ifdef SIMULATION
-    Simulation simMotorL(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, VALEUR_MAX_PWM, 1.4, 0.01);
-    Simulation simMotorR(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, VALEUR_MAX_PWM, 1.4, 0.01);
+	Simulation simMotorL(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, MAX_PWM_MOTORS, 1.4, 0.01);
+	Simulation simMotorR(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, MAX_PWM_MOTORS, 1.4, 0.01);
 #endif
 
 
@@ -232,8 +223,8 @@ void envoiConsigne()
     digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, batRobot._commandeRoueGauche == 0);	// stop motor if command is zero
     digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, batRobot._commandeRoueDroite == 0);
 
-    analogWrite(PIN_MOTEUR_GAUCHE_SENS, batRobot._commandeRoueGauche);
-    analogWrite(PIN_MOTEUR_DROITE_SENS, batRobot._commandeRoueDroite);
+	pwm_write_duty(PIN_MOTEUR_GAUCHE_SENS, batRobot._commandeRoueGauche);
+	pwm_write_duty(PIN_MOTEUR_DROITE_SENS, batRobot._commandeRoueDroite);
 #else
     simMotorL.setCommande(batRobot._commandeRoueGauche);
     simMotorR.setCommande(batRobot._commandeRoueDroite);
@@ -287,20 +278,20 @@ void setLedRGB(int r, int g, int b)
 	g = constrain(g, 0, 255);
 	b = constrain(b, 0, 255);
 
-    r = map(r, 0, 255, 0, VALEUR_MAX_PWM);
-    g = map(g, 0, 255, 0, VALEUR_MAX_PWM);
-    b = map(b, 0, 255, 0, VALEUR_MAX_PWM);
+	r = map(r, 0, 255, 0, MAX_PWM);
+	g = map(g, 0, 255, 0, MAX_PWM);
+	b = map(b, 0, 255, 0, MAX_PWM);
 
-    analogWrite(PIN_PWM_COLOR_R, r);
-    analogWrite(PIN_PWM_COLOR_G, g);
-    analogWrite(PIN_PWM_COLOR_B, b);
+	analogWrite(PIN_PWM_COLOR_R, r);
+	analogWrite(PIN_PWM_COLOR_G, g);
+	analogWrite(PIN_PWM_COLOR_B, b);
 }
 
 int readColor()
 {
     int color = digitalRead(PIN_INTERRUPTEUR_COULEUR);
     if (color == HIGH)
-        setLedRGB(255, 255, 0);    // jaune
+		setLedRGB(255, 255, 0);    // jaune
     else
         setLedRGB(255, 0, 0);  // rouge
 
@@ -317,8 +308,8 @@ void setup()
     analogWriteResolution(12);
     analogReadResolution(12);
 
-    // moteurs
-    pinMode(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, OUTPUT);
+	// motors
+	pinMode(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, OUTPUT);
     pinMode(PIN_MOTEUR_GAUCHE_BREAK, OUTPUT);
     pinMode(PIN_MOTEUR_DROITE_PWM_DIGITAL, OUTPUT);
     pinMode(PIN_MOTEUR_DROITE_BREAK, OUTPUT);
@@ -326,8 +317,11 @@ void setup()
     digitalWrite(PIN_MOTEUR_GAUCHE_BREAK, LOW);
     digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, LOW);
     digitalWrite(PIN_MOTEUR_DROITE_BREAK, LOW);
-    analogWrite(PIN_MOTEUR_GAUCHE_SENS, 2047);
-    analogWrite(PIN_MOTEUR_DROITE_SENS, 2047);
+	pwm_set_resolution(16);							// for motors only (custom PWM frequency)
+	pwm_setup(PIN_MOTEUR_GAUCHE_SENS, 40000, 2);	// 40 kHz (max recommended with this method)
+	pwm_setup(PIN_MOTEUR_DROITE_SENS, 40000, 2);
+	pwm_write_duty(PIN_MOTEUR_GAUCHE_SENS, 32767);
+	pwm_write_duty(PIN_MOTEUR_DROITE_SENS, 32767);
 
     // FPGA
     pinMode(PIN_FPGA_SEL3, OUTPUT);
@@ -347,7 +341,7 @@ void setup()
     pinMode(PIN_FPGA_BIT01, INPUT);
     pinMode(PIN_FPGA_BIT00, INPUT);
 
-    // capteurs
+	// sensors
     //pinMode(PIN_MICROSWITCH_AD INPUT);
     //pinMode(PIN_MICROSWITCH_AG INPUT);
     //pinMode(PIN_SONAR_AV_G, INPUT);
@@ -355,7 +349,7 @@ void setup()
     //pinMode(PIN_SONAR_AR_G, INPUT);
     //pinMode(PIN_SONAR_AR_D, INPUT);
 
-    // autre
+	// misc
     pinMode(PIN_JACK, INPUT);
     pinMode(PIN_INTERRUPTEUR_COULEUR, INPUT);
 

@@ -12,11 +12,12 @@ SOURCES += neobotCarteAsserv/com.cpp \
             neobotCarteAsserv/Pid.cpp \
             neobotCarteAsserv/Point.cpp \
             neobotCarteAsserv/Protocol.cpp \
-            neobotCarteAsserv/.cpp \
+			neobotCarteAsserv/Robot.cpp \
             neobotCarteAsserv/Logger.cpp \
             neobotCarteAsserv/Simulation.cpp \
             libraries/AdafruitTCS34725master/Adafruit_TCS34725.cpp \
-            TestColorSensor/TestColorSensor.ino
+			TestColorSensor/TestColorSensor.ino \
+			TestMoteursDue/TestMoteursDue.ino
 
 
 SOURCES += neobotCarteAsserv/com.h \

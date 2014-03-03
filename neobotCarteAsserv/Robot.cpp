@@ -213,9 +213,9 @@ float Robot::filtreCommandeRoue(float value)
         value = 0;
     }
 
-    float commande = (VALEUR_MAX_PWM * (value + COMMANDE_MOTEUR_MAX) / (2 * COMMANDE_MOTEUR_MAX)) * RATIO_PWM;
+	float commande = (MAX_PWM_MOTORS * (value + COMMANDE_MOTEUR_MAX) / (2 * COMMANDE_MOTEUR_MAX)) * RATIO_PWM;
 
-    return constrain(commande, 0, VALEUR_MAX_PWM);
+	return constrain(commande, 0, MAX_PWM_MOTORS);
 }
 
 void Robot::avanceDe(float avance, bool avecFreinage, float vitessMax) // en mm
