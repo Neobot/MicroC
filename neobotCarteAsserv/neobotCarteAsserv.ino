@@ -36,7 +36,7 @@
 //#define COUNTDOWN
 //#define DEBUG_RECEIVED_COMM_INSTRUCTION
 #define NO_JACK
-#define SIMULATION						// simulates motors & robot movements
+//#define SIMULATION						// simulates motors & robot movements
 #define NO_TPS_MATCH
 
 #define ENABLE_DEBUG		true		// if false, disable all logging
@@ -97,23 +97,23 @@
 #define PIN_MOTEUR_DROITE_BREAK 26			//ok
 
 //FPGA
-#define PIN_FPGA_BIT11 38
-#define PIN_FPGA_BIT10 39
-#define PIN_FPGA_BIT09 40
-#define PIN_FPGA_BIT08 41
-#define PIN_FPGA_BIT07 42
-#define PIN_FPGA_BIT06 44
-#define PIN_FPGA_BIT05 45
-#define PIN_FPGA_BIT04 46
-#define PIN_FPGA_BIT03 47
-#define PIN_FPGA_BIT02 48
-#define PIN_FPGA_BIT01 49
-#define PIN_FPGA_BIT00 50
+#define PIN_FPGA_BIT11 41
+#define PIN_FPGA_BIT10 42
+#define PIN_FPGA_BIT09 43
+#define PIN_FPGA_BIT08 44
+#define PIN_FPGA_BIT07 45
+#define PIN_FPGA_BIT06 47
+#define PIN_FPGA_BIT05 48
+#define PIN_FPGA_BIT04 49
+#define PIN_FPGA_BIT03 50
+#define PIN_FPGA_BIT02 51
+#define PIN_FPGA_BIT01 52
+#define PIN_FPGA_BIT00 53
 
-#define PIN_FPGA_SEL3 35
-#define PIN_FPGA_SEL2 36
-#define PIN_FPGA_SEL1 37
-#define PIN_FPGA_SEL0 43
+#define PIN_FPGA_SEL3 38
+#define PIN_FPGA_SEL2 39
+#define PIN_FPGA_SEL1 40
+#define PIN_FPGA_SEL0 46
 
 
 // sensors
@@ -476,7 +476,7 @@ void loop()
     if (commEcrit.ready())
     {
         batCom.sendPosition();
-	   // litEtEnvoieSonar();
+		litEtEnvoieSonar();
     }
 #endif
 
