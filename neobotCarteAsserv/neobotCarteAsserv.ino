@@ -220,8 +220,8 @@ void MAJPosition()
 void envoiConsigne()
 {
 #ifndef SIMULATION
-    digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, batRobot._commandeRoueGauche == 0);	// stop motor if command is zero
-    digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, batRobot._commandeRoueDroite == 0);
+    digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, batRobot._commandeRoueGauche == 0 ? LOW : HIGH);	// stop motor if command is zero
+    digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, batRobot._commandeRoueDroite == 0 ? LOW : HIGH);
 
 	pwm_write_duty(PIN_MOTEUR_GAUCHE_SENS, batRobot._commandeRoueGauche);
 	pwm_write_duty(PIN_MOTEUR_DROITE_SENS, batRobot._commandeRoueDroite);
