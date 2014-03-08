@@ -276,8 +276,6 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
         uint8_t typeDeplacement;
         uint8_t speed;
 
-        p.pointArret = data[9] == 1;
-
         data = readInt16(data, x);
         data = readInt16(data, y);
         data = readInt16(data, theta);
@@ -289,6 +287,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
         p.y = y;
         p.theta = theta / ANGLE_FACTOR;
         p.typeAsserv = (Point::TypeAsserv)typeAsserv;
+        p.pointArret = data[9] == 1;
         p.vitessMax = (float) speed;
         p.typeDeplacement = (Point::TypeDeplacement) typeDeplacement;
 
