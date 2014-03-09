@@ -25,6 +25,8 @@
 #define INSTR_SET_POS 10
 #define INSTR_ISBLOCKED 103
 #define INSTR_AVOIDING 110
+#define INSTR_SEND_MICROSWITCH 111
+#define INSTR_SEND_COLOR_SENSORS 112
 #define INSTR_CONSIGNE 104
 #define INSTR_LOG 124
 #define INSTR_SEND_PARAMETERS 125
@@ -32,7 +34,6 @@
 #define INSTR_SET_PARAMETERS 50
 #define INSTR_ASK_PARAMETERS 51
 #define INSTR_PING 254
-#define INSTR_SEND_MICROSWITCH 111
 #define INSTR_ACTION 60
 
 const float ANGLE_FACTOR = 1000.0;
@@ -179,6 +180,20 @@ void Comm::sendSonars(int ag, int ad, int rg, int rd)
     dataPtr = writeInt8(dataPtr, rd < 255 ? rd : 255);
 
     protocol.sendMessage(INSTR_AVOIDING, 4, data);
+}
+
+void Comm::sendColorSensors(int r1, int g1, int b1, int r2, int g2, int b2)
+{
+	uint8_t data[6];
+
+	data[0] = (uint8_t)(r1 >> 8);
+	data[1] = (uint8_t)(g1 >> 8);
+	data[2] = (uint8_t)(b1 >> 8);
+	data[3] = (uint8_t)(r2 >> 8);
+	data[4] = (uint8_t)(g2 >> 8);
+	data[5] = (uint8_t)(b2 >> 8);
+
+	protocol.sendMessage(INSTR_SEND_COLOR_SENSORS, 6, data);
 }
 
 void Comm::sendMicroswitch(bool left, bool right)
@@ -362,16 +377,6 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
         switch (parameter)
         {
-        case (0) :
-            robot->MAJContaineur(true, actionType);
-            break;
-        case (1) :
-            robot->MAJContaineur(false, actionType);
-            break;
-        case (2) :
-            robot->MAJContaineur(true, actionType);
-            robot->MAJContaineur(false, actionType);
-            break;
         }
 
     }

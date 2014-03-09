@@ -40,6 +40,7 @@ public:
   void sendParameterNames();
   void sendAR(uint8_t instruction, bool ok);
   void sendSonars(int ag, int ad, int rg, int rd);
+  void sendColorSensors(int r1, int g1, int b1, int r2, int g2, int b2);
   void sendMicroswitch(bool left, bool right);
   void sendPosition();
   void sendConsigne();

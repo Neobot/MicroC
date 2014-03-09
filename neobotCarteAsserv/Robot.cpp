@@ -321,31 +321,3 @@ void Robot::stopAttente()
     tempsAttenteDeplacement = 0;
 }
 
-void Robot::MAJContaineur(bool isGauche, int pos)
-{
-    int posDepose = !isGauche ? 25 : 140;
-    int posAjoutVerre = !isGauche ? 93 : 82;
-    int posMaintien = !isGauche ? 97: 78;
-    int posfermer = !isGauche ? 160 : 5;
-
-    Servo* servo = !isGauche ? servoArG : servoArD;
-
-    switch (pos)
-    {
-    case 0: //depose
-        servo->write(posDepose);
-        break;
-    case 1: //ajout verre
-        servo->write(posAjoutVerre);
-        break;
-    case 2: // maintien
-        servo->write(posMaintien);
-        break;
-    case 3: //fermer
-        servo->write(posfermer);
-        break;
-    }
-
-}
-
-

@@ -97,7 +97,7 @@
 
 typedef enum
 {
-    TCS34725_INTEGRATIONTIME_2_4MS  = 0xFF,   /**<  2.4ms - 1 cycle    - Max Count: 1024  */
+	TCS34725_INTEGRATIONTIME_2_4MS  = 0xFF,   /**<  2.4ms - 1 cycle    - Max Count: 1024  */
     TCS34725_INTEGRATIONTIME_24MS   = 0xF6,   /**<  24ms  - 10 cycles  - Max Count: 10240 */
     TCS34725_INTEGRATIONTIME_50MS   = 0xEB,   /**<  50ms  - 20 cycles  - Max Count: 20480 */
     TCS34725_INTEGRATIONTIME_101MS  = 0xD5,   /**<  101ms - 42 cycles  - Max Count: 43008 */
@@ -123,7 +123,8 @@ public:
     void     setIntegrationTime(tcs34725IntegrationTime_t it);
     void     setGain(tcs34725Gain_t gain);
     void     getRawData(uint16_t *r, uint16_t *g, uint16_t *b, uint16_t *c);
-    float     getColor(void);
+	void     getRawDataWithoutDelay(uint16_t *r, uint16_t *g, uint16_t *b);
+	float     getColor(void);
     uint16_t calculateColorTemperature(uint16_t r, uint16_t g, uint16_t b);
     uint16_t calculateLux(uint16_t r, uint16_t g, uint16_t b);
     void     write8 (uint8_t reg, uint32_t value);

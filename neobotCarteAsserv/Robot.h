@@ -101,8 +101,6 @@ class Robot
     void attend(unsigned long attente); // tps ne milliseconde
     bool estEnAttente();
     void stopAttente();
-    void MAJContaineur(bool isGauche, int pos);
-    
     
     float pasPrecendentGauche;
     float pasPrecendentDroit;

@@ -21,6 +21,8 @@
 #include "QueueList.h" // fifo
 #include <Task.h>
 #include "pwm01.h"
+#include <Wire.h>
+#include "Adafruit_TCS34725.h"	// color sensors
 
 #include "Protocol.h"
 #include "Robot.h"
@@ -36,7 +38,7 @@
 //#define COUNTDOWN
 //#define DEBUG_RECEIVED_COMM_INSTRUCTION
 #define NO_JACK
-//#define SIMULATION						// simulates motors & robot movements
+#define SIMULATION						// simulates motors & robot movements
 #define NO_TPS_MATCH
 
 #define ENABLE_DEBUG		true		// if false, disable all logging
@@ -69,6 +71,12 @@
 #define PIN_SERVO_3 6
 #define PIN_SERVO_4 7
 
+// moteur commande on/off
+#define PIN_MOTEUR_1 11
+#define PIN_MOTEUR_2 12
+#define PIN_MOTEUR_3 30
+#define PIN_MOTEUR_4 31
+
 #define PIN_PWM_COLOR_R 2		//ok
 #define PIN_PWM_COLOR_G 3		//ok
 #define PIN_PWM_COLOR_B 10		//ok
@@ -97,26 +105,50 @@
 #define PIN_MOTEUR_DROITE_BREAK 26			//ok
 
 //FPGA
-#define PIN_FPGA_BIT11 41
-#define PIN_FPGA_BIT10 42
-#define PIN_FPGA_BIT09 43
-#define PIN_FPGA_BIT08 44
-#define PIN_FPGA_BIT07 45
-#define PIN_FPGA_BIT06 47
-#define PIN_FPGA_BIT05 48
-#define PIN_FPGA_BIT04 49
-#define PIN_FPGA_BIT03 50
-#define PIN_FPGA_BIT02 51
-#define PIN_FPGA_BIT01 52
-#define PIN_FPGA_BIT00 53
+<<<<<<< HEAD
+#define PIN_FPGA_BIT11 41 //ok
+#define PIN_FPGA_BIT10 42 //ok
+#define PIN_FPGA_BIT09 43 //ok
+#define PIN_FPGA_BIT08 44 //ok
+#define PIN_FPGA_BIT07 45 //ok
+#define PIN_FPGA_BIT06 47 //ok
+#define PIN_FPGA_BIT05 48 //ok
+#define PIN_FPGA_BIT04 49 //ok
+#define PIN_FPGA_BIT03 50 //ok
+#define PIN_FPGA_BIT02 51 //ok
+#define PIN_FPGA_BIT01 52 //ok
+#define PIN_FPGA_BIT00 53 //ok
 
-#define PIN_FPGA_SEL3 38
-#define PIN_FPGA_SEL2 39
-#define PIN_FPGA_SEL1 40
-#define PIN_FPGA_SEL0 46
+#define PIN_FPGA_SEL3 38 //ok
+#define PIN_FPGA_SEL2 39 //ok
+#define PIN_FPGA_SEL1 40 //ok
+#define PIN_FPGA_SEL0 46 //ok
+
+
+// ****** sensors ***** //
+
+=======
+#define PIN_FPGA_BIT11 38
+#define PIN_FPGA_BIT10 39
+#define PIN_FPGA_BIT09 40
+#define PIN_FPGA_BIT08 41
+#define PIN_FPGA_BIT07 42
+#define PIN_FPGA_BIT06 44
+#define PIN_FPGA_BIT05 45
+#define PIN_FPGA_BIT04 46
+#define PIN_FPGA_BIT03 47
+#define PIN_FPGA_BIT02 48
+#define PIN_FPGA_BIT01 49
+#define PIN_FPGA_BIT00 50
+
+#define PIN_FPGA_SEL3 35
+#define PIN_FPGA_SEL2 36
+#define PIN_FPGA_SEL1 37
+#define PIN_FPGA_SEL0 43
 
 
 // sensors
+>>>>>>> FETCH_HEAD
 #define PIN_SHARP_1 0
 #define PIN_SHARP_2 1
 #define PIN_SHARP_3 2
@@ -124,10 +156,10 @@
 #define PIN_SHARP_5 4
 #define PIN_SHARP_6 5
 
-#define PIN_SONAR_AV_G 6
-#define PIN_SONAR_AV_D 7
-#define PIN_SONAR_AR_G 8
-#define PIN_SONAR_AR_D 9
+#define PIN_SONAR_AV_G 6 //ok
+#define PIN_SONAR_AV_D 7 //ok
+#define PIN_SONAR_AR_G 8 //ok
+#define PIN_SONAR_AR_D 9 //ok
 
 
 /*********************************************************************************/
@@ -140,6 +172,9 @@ Task commEcrit(PERIODE_COM_ECRITURE);
 
 Servo servoArG;
 Servo servoArD;
+
+Adafruit_TCS34725 colorSensor1 = Adafruit_TCS34725(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
+Adafruit_TCS34725 colorSensor2 = Adafruit_TCS34725(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
 
 Robot batRobot(&servoArG, &servoArD, PERIODE_ASSERV_MS);
 Comm batCom(&batRobot);
@@ -267,6 +302,24 @@ void litEtEnvoieSonar()
 #endif
 }
 
+void litEtEnvoieColorSensors()
+{
+	uint16_t r1, g1, b1, r2, g2, b2;
+	colorSensor1.getRawDataWithoutDelay(&r1, &g1, &b1);
+	colorSensor2.getRawDataWithoutDelay(&r2, &g2, &b2);
+
+#ifndef NO_PC_COMM
+	batCom.sendColorSensors((int)r1, (int)g1, (int)b1, (int)r2, (int)g2, (int)b2);
+#endif
+}
+
+void enableColorSensors(bool enable)
+{
+	colorSensor1.setInterrupt(!enable);
+	colorSensor2.setInterrupt(!enable);
+}
+
+
 void bougeServo()
 {
 
@@ -322,6 +375,18 @@ void setup()
 	pwm_setup(PIN_MOTEUR_DROITE_SENS, 40000, 2);
 	pwm_write_duty(PIN_MOTEUR_GAUCHE_SENS, 32767);
 	pwm_write_duty(PIN_MOTEUR_DROITE_SENS, 32767);
+
+	// moteur on/off
+	pinMode(PIN_MOTEUR_1, OUTPUT);
+	pinMode(PIN_MOTEUR_2, OUTPUT);
+	pinMode(PIN_MOTEUR_3, OUTPUT);
+	pinMode(PIN_MOTEUR_4, OUTPUT);
+
+	digitalWrite(PIN_MOTEUR_1, LOW);
+	digitalWrite(PIN_MOTEUR_2, HIGH);
+	digitalWrite(PIN_MOTEUR_3, LOW);
+	digitalWrite(PIN_MOTEUR_4, LOW);
+
 
     // FPGA
     pinMode(PIN_FPGA_SEL3, OUTPUT);
@@ -398,6 +463,7 @@ void setup()
 
   }*/
 
+	delay(1000);
 	batLogger.println("Restart arduino");
 
 #ifdef SIMULATION
@@ -452,6 +518,8 @@ void setup()
     batRobot.passageAuPointSuivant();
     batRobot.vaVersPointSuivant();
 
+	enableColorSensors(true);
+
 	batLogger.println("Here we gooooo!");
 
 #ifndef NO_PC_COMM
@@ -476,7 +544,12 @@ void loop()
     if (commEcrit.ready())
     {
         batCom.sendPosition();
+<<<<<<< HEAD
 		litEtEnvoieSonar();
+		litEtEnvoieColorSensors();
+=======
+	   // litEtEnvoieSonar();
+>>>>>>> FETCH_HEAD
     }
 #endif
 

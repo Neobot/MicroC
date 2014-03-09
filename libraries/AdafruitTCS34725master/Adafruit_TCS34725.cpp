@@ -229,7 +229,7 @@ void Adafruit_TCS34725::getRawData (uint16_t *r, uint16_t *g, uint16_t *b, uint1
     *b = read16(TCS34725_BDATAL);
     
     /* Set a delay for the integration time */
-    switch (_tcs34725IntegrationTime)
+	switch (_tcs34725IntegrationTime)
     {
         case TCS34725_INTEGRATIONTIME_2_4MS:
             delay(3);
@@ -250,6 +250,19 @@ void Adafruit_TCS34725::getRawData (uint16_t *r, uint16_t *g, uint16_t *b, uint1
             delay(700);
             break;
     }
+}
+
+/*!
+ @brief  Reads the raw red, green, blue channel values
+ */
+/**************************************************************************/
+void Adafruit_TCS34725::getRawDataWithoutDelay (uint16_t *r, uint16_t *g, uint16_t *b)
+{
+	if (!_tcs34725Initialised) begin();
+
+	*r = read16(TCS34725_RDATAL);
+	*g = read16(TCS34725_GDATAL);
+	*b = read16(TCS34725_BDATAL);
 }
 
 /**************************************************************************/
