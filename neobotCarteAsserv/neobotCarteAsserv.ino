@@ -105,7 +105,6 @@
 #define PIN_MOTEUR_DROITE_BREAK 26			//ok
 
 //FPGA
-<<<<<<< HEAD
 #define PIN_FPGA_BIT11 41 //ok
 #define PIN_FPGA_BIT10 42 //ok
 #define PIN_FPGA_BIT09 43 //ok
@@ -124,31 +123,7 @@
 #define PIN_FPGA_SEL1 40 //ok
 #define PIN_FPGA_SEL0 46 //ok
 
-
-// ****** sensors ***** //
-
-=======
-#define PIN_FPGA_BIT11 38
-#define PIN_FPGA_BIT10 39
-#define PIN_FPGA_BIT09 40
-#define PIN_FPGA_BIT08 41
-#define PIN_FPGA_BIT07 42
-#define PIN_FPGA_BIT06 44
-#define PIN_FPGA_BIT05 45
-#define PIN_FPGA_BIT04 46
-#define PIN_FPGA_BIT03 47
-#define PIN_FPGA_BIT02 48
-#define PIN_FPGA_BIT01 49
-#define PIN_FPGA_BIT00 50
-
-#define PIN_FPGA_SEL3 35
-#define PIN_FPGA_SEL2 36
-#define PIN_FPGA_SEL1 37
-#define PIN_FPGA_SEL0 43
-
-
 // sensors
->>>>>>> FETCH_HEAD
 #define PIN_SHARP_1 0
 #define PIN_SHARP_2 1
 #define PIN_SHARP_3 2
@@ -544,12 +519,8 @@ void loop()
     if (commEcrit.ready())
     {
         batCom.sendPosition();
-<<<<<<< HEAD
 		litEtEnvoieSonar();
 		litEtEnvoieColorSensors();
-=======
-	   // litEtEnvoieSonar();
->>>>>>> FETCH_HEAD
     }
 #endif
 
