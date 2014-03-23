@@ -147,6 +147,7 @@ Adafruit_TCS34725::Adafruit_TCS34725(TwoWire *wire, tcs34725IntegrationTime_t it
     _tcs34725Initialised = false;
     _tcs34725IntegrationTime = it;
     _tcs34725Gain = gain;
+	_justEnabled = true;
 }
 
 /*========================================================================*/
@@ -256,10 +257,11 @@ void Adafruit_TCS34725::getRawData (uint16_t *r, uint16_t *g, uint16_t *b, uint1
  @brief  Reads the raw red, green, blue channel values
  */
 /**************************************************************************/
-void Adafruit_TCS34725::getRawDataWithoutDelay (uint16_t *r, uint16_t *g, uint16_t *b)
+void Adafruit_TCS34725::getRawDataWithoutDelay (uint16_t *r, uint16_t *g, uint16_t *b, uint16_t *c)
 {
 	if (!_tcs34725Initialised) begin();
 
+	*c = read16(TCS34725_CDATAL);
 	*r = read16(TCS34725_RDATAL);
 	*g = read16(TCS34725_GDATAL);
 	*b = read16(TCS34725_BDATAL);
@@ -270,36 +272,33 @@ void Adafruit_TCS34725::getRawDataWithoutDelay (uint16_t *r, uint16_t *g, uint16
  @brief  Customised read function with no delay and returns single value as hue
  */
 /**************************************************************************/
-float Adafruit_TCS34725::getColor ()
+void Adafruit_TCS34725::getColorInHSL(float *h, float *s, float *l)
 {
     uint16_t rr, gg, bb, cc;
-    float hue, r, g, b, c, max, min, delta;
+	float r, g, b, c, max, min, delta;
     
     if (!_tcs34725Initialised) begin();
     
-    cc = read16(TCS34725_CDATAL);
-    rr = read16(TCS34725_RDATAL);
-    gg = read16(TCS34725_GDATAL);
-    bb = read16(TCS34725_BDATAL);
+	getRawDataWithoutDelay(&rr, &gg, &bb, &cc);
     
     c = (float)cc;
     r = (float)rr; r /= c;
     g = (float)gg; g /= c; g *= 1.11; // correction factor found by testing on neutral color
     b = (float)bb; b /= c; b *= 1.77; // correction factor found by testing on neutral color
-
     
     max = max(max(r, g), b);
     min = min(min(r, g), b);
     delta = max - min;
     
     if (r == max)
-        hue = 60 * (g - b) / delta;
+		*h = 60 * (g - b) / delta;
     else if (g == max)
-        hue = 60 * ((b - r) / delta + 2);
+		*h = 60 * ((b - r) / delta + 2);
     else
-        hue = 60 * ((r - g) / delta + 4);
+		*h = 60 * ((r - g) / delta + 4);
   
-    return (hue < 0 ? hue + 360 : hue);
+	if (*h < 0)
+		*h += 360;
 }
 
 /**************************************************************************/
@@ -358,9 +357,10 @@ uint16_t Adafruit_TCS34725::calculateLux(uint16_t r, uint16_t g, uint16_t b)
 void Adafruit_TCS34725::setInterrupt(boolean i) {
     uint8_t r = read8(TCS34725_ENABLE);
     if (i) {
-        r |= TCS34725_ENABLE_AIEN;
+		r |= TCS34725_ENABLE_AIEN;
     } else {
         r &= ~TCS34725_ENABLE_AIEN;
+		_justEnabled = true;
     }
     write8(TCS34725_ENABLE, r);
 }
@@ -381,4 +381,12 @@ void Adafruit_TCS34725::setIntLimits(uint16_t low, uint16_t high) {
     write8(0x05, low >> 8);
     write8(0x06, high & 0xFF);
     write8(0x07, high >> 8);
+}
+
+bool Adafruit_TCS34725::isEnabled()
+{
+	bool justEnabled = _justEnabled;
+	_justEnabled = false;
+
+	return justEnabled;
 }

@@ -1,7 +1,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "com.h"
+#include "Comm.h"
 
 class Logger
 {

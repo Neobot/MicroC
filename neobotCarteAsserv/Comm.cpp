@@ -7,34 +7,54 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "com.h"
+#include "Comm.h"
 #include "Point.h"
 #include "Protocol.h"
 #include "Logger.h"
 
-#define INSTR_COORD 100
-#define INSTR_ISARRIVED 102
-#define INSTR_INIT_DONE 120
-#define INSTR_GO 121
-#define INSTR_RESTART 122
-#define INSTR_QUIT 123
-#define INSTR_AR 255
-#define INSTR_DEST_ADD 1
-#define INSTR_DEST_REPLACE 2
-#define INSTR_FLUSH 3
-#define INSTR_SET_POS 10
-#define INSTR_ISBLOCKED 103
-#define INSTR_AVOIDING 110
-#define INSTR_SEND_MICROSWITCH 111
-#define INSTR_SEND_COLOR_SENSORS 112
-#define INSTR_CONSIGNE 104
-#define INSTR_LOG 124
-#define INSTR_SEND_PARAMETERS 125
-#define INSTR_SEND_PARAMETERS_NAMES 126
-#define INSTR_SET_PARAMETERS 50
-#define INSTR_ASK_PARAMETERS 51
-#define INSTR_PING 254
-#define INSTR_ACTION 60
+// PC -> MicroC
+#define INSTR_DEST_ADD				1
+#define INSTR_DEST_REPLACE			2
+#define INSTR_FLUSH					3
+#define INSTR_SET_POS				10
+#define INSTR_ENABLE_SENSOR			20
+#define INSTR_DISABLE_SENSOR		21
+#define INSTR_SET_PARAMETERS		50
+#define INSTR_ASK_PARAMETERS		51
+#define INSTR_ACTION				60
+
+// MicroC -> PC
+#define INSTR_COORD					100
+//#define INSTR_ISARRIVED				102
+//#define INSTR_ISBLOCKED				103
+#define INSTR_CONSIGNE				104
+#define INSTR_SEND_SONARS			110
+//#define INSTR_SEND_MICROSWITCH		111
+//#define INSTR_SEND_COLOR_SENSORS	112
+#define INSTR_INIT_DONE				120
+#define INSTR_GO					121
+#define INSTR_RESTART				122
+#define INSTR_QUIT					123
+#define INSTR_LOG					124
+#define INSTR_SEND_PARAMETERS		125
+#define INSTR_SEND_PARAMETERS_NAMES	126
+#define INSTR_EVENT					130
+
+// bidirectional
+#define INSTR_PING					254
+#define INSTR_AR					255
+
+// actions
+#define ACTION_START_PUMP				1	// parameter = pump number
+#define ACTION_STOP_PUMP				2	// parameter = pump number
+
+// events
+#define EVENT_IS_ARRIVED				1
+#define EVENT_IS_BLOCKED				2
+#define EVENT_YELLOW_OBJECT_DETECTED	10	// parameter = sensor number
+#define EVENT_RED_OBJECT_DETECTED		11	// parameter = sensor number
+#define EVENT_NO_OBJECT_DETECTED		12	// parameter = sensor number
+
 
 const float ANGLE_FACTOR = 1000.0;
 
@@ -179,9 +199,9 @@ void Comm::sendSonars(int ag, int ad, int rg, int rd)
     dataPtr = writeInt8(dataPtr, rg < 255 ? rg : 255);
     dataPtr = writeInt8(dataPtr, rd < 255 ? rd : 255);
 
-    protocol.sendMessage(INSTR_AVOIDING, 4, data);
+	protocol.sendMessage(INSTR_SEND_SONARS, 4, data);
 }
-
+/*
 void Comm::sendColorSensors(int r1, int g1, int b1, int r2, int g2, int b2)
 {
 	uint8_t data[6];
@@ -205,7 +225,7 @@ void Comm::sendMicroswitch(bool left, bool right)
 
     protocol.sendMessage(INSTR_SEND_MICROSWITCH, 2, data);
 }
-
+*/
 void Comm::sendPosition()
 {
     uint8_t dir = robot->quelSens();
@@ -259,14 +279,18 @@ void Comm::quit()
 
 void Comm::sendIsArrived()
 {
-    uint8_t data[0];
-    protocol.sendMessage(INSTR_ISARRIVED, 0, data);
+	uint8_t data[1];
+	uint8_t* dataPtr = &(data[0]);
+	dataPtr = writeInt8(dataPtr, (uint8_t)EVENT_IS_ARRIVED);
+	protocol.sendMessage(INSTR_EVENT, 1, data);
 }
 
 void Comm::sendIsBlocked()
 {
-    uint8_t data[0];
-    protocol.sendMessage(INSTR_ISBLOCKED, 0, data);
+	uint8_t data[1];
+	uint8_t* dataPtr = &(data[0]);
+	dataPtr = writeInt8(dataPtr, (uint8_t)EVENT_IS_BLOCKED);
+	protocol.sendMessage(INSTR_EVENT, 1, data);
 }
 
 void Comm::sendLog(const String& text)
@@ -373,10 +397,10 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     {
         uint8_t actionType;
         uint8_t parameter;
-        data = readUInt8(data, parameter);
         data = readUInt8(data, actionType);
+		data = readUInt8(data, parameter);
 
-        switch (parameter)
+		switch (actionType)
         {
         }
 

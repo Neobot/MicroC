@@ -1,10 +1,10 @@
 #include "Robot.h"
 
-Robot::Robot(Servo* servoArG, Servo* servoArD, float periodAsserv, float x, float y, float theta)
-    : _pidDist(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE),
-      _pidOrientation(ACTIVE_PID_ANGLE, KP_ANGLE, KD_ANGLE),
-      _consigneDist(VITESSE_MAX, ACCELARATION_MAX_EN_REEL_LIN, periodAsserv, 1.4, 5),
-      _consigneOrientation(VITESSE_MAX_ROT, ACCELARATION_MAX_EN_REEL_ROT, periodAsserv, 0.05)
+Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, float periodAsserv, float x, float y, float theta) :
+	_pidDist(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE),
+	_pidOrientation(ACTIVE_PID_ANGLE, KP_ANGLE, KD_ANGLE),
+	_consigneDist(VITESSE_MAX, ACCELARATION_MAX_EN_REEL_LIN, periodAsserv, 1.4, 5),
+	_consigneOrientation(VITESSE_MAX_ROT, ACCELARATION_MAX_EN_REEL_ROT, periodAsserv, 0.05)
 {
     _tourneFini = false;
     _pingReceived = false;
@@ -16,9 +16,6 @@ Robot::Robot(Servo* servoArG, Servo* servoArD, float periodAsserv, float x, floa
     point.x = x;
     point.y = y;
     point.theta = theta;
-
-    servoArG = servoArG;
-    servoArD = servoArD;
 
     teleport(point);
     forceObjectif(point);
@@ -32,6 +29,9 @@ Robot::Robot(Servo* servoArG, Servo* servoArD, float periodAsserv, float x, floa
 
     pasPrecendentGauche = 0.0;
     pasPrecendentDroit = 0.0;
+
+	_colorSensor[0] = colorSensor1;
+	_colorSensor[1] = colorSensor2;
 }
 
 void Robot::teleport(Point point)
@@ -321,3 +321,33 @@ void Robot::stopAttente()
     tempsAttenteDeplacement = 0;
 }
 
+void Robot::enableColorSensor(int sensorId)
+{
+	_colorSensorEnabled[sensorId] = 1;
+	_colorSensor[sensorId]->setInterrupt(false);
+}
+
+
+void Robot::disableColorSensor(int sensorId)
+{
+	_colorSensorEnabled[sensorId] = 0;
+
+	_colorSensor[sensorId]->setInterrupt(true);
+}
+
+bool Robot::isColorSensorEnabled(int sensorId)
+{
+	return _colorSensorEnabled[sensorId];
+}
+
+void Robot::readColorSensor(int sensorId)
+{
+	if (_colorSensor[sensorId]->isEnabled())
+	{
+		float h, s, l;
+
+		_colorSensor[sensorId]->getColorInHSL(&h, &s, &l);
+
+		// to do: convert to meaninfull color (red, yellow, nothing)
+	}
+}

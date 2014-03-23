@@ -6,7 +6,7 @@
 
 TEMPLATE = app
 
-SOURCES += neobotCarteAsserv/com.cpp \
+SOURCES += \
             neobotCarteAsserv/Consigne.cpp \
             neobotCarteAsserv/neobotCarteAsserv.ino \
             neobotCarteAsserv/Pid.cpp \
@@ -17,36 +17,19 @@ SOURCES += neobotCarteAsserv/com.cpp \
             neobotCarteAsserv/Simulation.cpp \
             libraries/AdafruitTCS34725master/Adafruit_TCS34725.cpp \
 			TestColorSensor/TestColorSensor.ino \
-			TestMoteursDue/TestMoteursDue.ino
+			TestMoteursDue/TestMoteursDue.ino \
+			neobotCarteAsserv/Comm.cpp
 
 
-SOURCES += neobotCarteAsserv/com.h \
-            neobotCarteAsserv/Consigne.h \
+SOURCES += \
+			neobotCarteAsserv/Comm.h \
+			neobotCarteAsserv/Consigne.h \
             neobotCarteAsserv/id.h \
             neobotCarteAsserv/Point.h \
             neobotCarteAsserv/Protocol.h \
             neobotCarteAsserv/Robot.h \
             neobotCarteAsserv/Logger.h \
             neobotCarteAsserv/Simulation.h \
-            libraries/AdafruitTCS34725master/Adafruit_TCS34725.h
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+			neobotCarteAsserv/IOConfig.h \
+			neobotCarteAsserv/Parameters.h \
+			libraries/AdafruitTCS34725master/Adafruit_TCS34725.h

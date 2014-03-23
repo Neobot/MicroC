@@ -24,117 +24,14 @@
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"	// color sensors
 
+#include "IOConfig.h"
+#include "Parameters.h"
 #include "Protocol.h"
 #include "Robot.h"
-#include "com.h"
+#include "Comm.h"
 #include "Logger.h"
 #include "Simulation.h"
 
-
-/*********************************************************************************/
-/*                                  Config                                       */
-/*********************************************************************************/
-
-//#define COUNTDOWN
-//#define DEBUG_RECEIVED_COMM_INSTRUCTION
-#define NO_JACK
-#define SIMULATION						// simulates motors & robot movements
-#define NO_TPS_MATCH
-
-#define ENABLE_DEBUG		true		// if false, disable all logging
-#define ENABLE_PC_COMM		true		// enable comm to PC and redirect debug messages to PC
-//#define DEBUG_ENCODER
-//#define DEBUG_POSITION
-//#define DEBUG_CONSIGNE_LIN
-//#define DEBUG_CONSIGNE_ROT
-//#define DEBUG_ULTRASON
-
-
-#define MAX_PWM 4095.0
-#define MAX_PWM_MOTORS 65535.0
-
-#define PERIODE_ASSERV_MS 5.0
-#define PERIODE_COM_LECTURE 50.0
-#define PERIODE_COM_ECRITURE 50.0
-
-#define TPS_MATCH 90000
-
-#define PI 3.1415926535897
-#define NB_PAS_TOUR 4096.0
-#define DIAMETRE_ROUE_MM 57.6
-#define COEFF_CONVERTION_PAS_RADIAN NB_PAS_TOUR / (2.0 * PI)
-#define COEFF_CONVERTION_PAS_MM DIAMETRE_ROUE_MM / (2.0 * COEFF_CONVERTION_PAS_RADIAN)
-
-
-#define PIN_SERVO_1 4
-#define PIN_SERVO_2 5
-#define PIN_SERVO_3 6
-#define PIN_SERVO_4 7
-
-// moteur commande on/off
-#define PIN_MOTEUR_1 11
-#define PIN_MOTEUR_2 12
-#define PIN_MOTEUR_3 30
-#define PIN_MOTEUR_4 31
-
-#define PIN_PWM_COLOR_R 2		//ok
-#define PIN_PWM_COLOR_G 3		//ok
-#define PIN_PWM_COLOR_B 10		//ok
-
-#define UM6_1 16
-#define UM6_2 17
-
-#define PIN_JACK 22
-#define PIN_BOUTON_1 23
-#define PIN_BOUTON_2 51
-
-#define PIN_INTERRUPTEUR_COULEUR 24			//ok
-
-#define PIN_CONTACTEUR_1 25
-#define PIN_CONTACTEUR_2 26
-#define PIN_CONTACTEUR_3 27
-#define PIN_CONTACTEUR_4 28
-#define PIN_CONTACTEUR_5 29
-#define PIN_CONTACTEUR_6 30
-
-#define PIN_MOTEUR_GAUCHE_SENS 9			//ok
-#define PIN_MOTEUR_GAUCHE_PWM_DIGITAL 29	//ok
-#define PIN_MOTEUR_GAUCHE_BREAK 28			//ok
-#define PIN_MOTEUR_DROITE_SENS 8			//ok
-#define PIN_MOTEUR_DROITE_PWM_DIGITAL 27	//ok
-#define PIN_MOTEUR_DROITE_BREAK 26			//ok
-
-//FPGA
-#define PIN_FPGA_BIT11 41 //ok
-#define PIN_FPGA_BIT10 42 //ok
-#define PIN_FPGA_BIT09 43 //ok
-#define PIN_FPGA_BIT08 44 //ok
-#define PIN_FPGA_BIT07 45 //ok
-#define PIN_FPGA_BIT06 47 //ok
-#define PIN_FPGA_BIT05 48 //ok
-#define PIN_FPGA_BIT04 49 //ok
-#define PIN_FPGA_BIT03 50 //ok
-#define PIN_FPGA_BIT02 51 //ok
-#define PIN_FPGA_BIT01 52 //ok
-#define PIN_FPGA_BIT00 53 //ok
-
-#define PIN_FPGA_SEL3 38 //ok
-#define PIN_FPGA_SEL2 39 //ok
-#define PIN_FPGA_SEL1 40 //ok
-#define PIN_FPGA_SEL0 46 //ok
-
-// sensors
-#define PIN_SHARP_1 0
-#define PIN_SHARP_2 1
-#define PIN_SHARP_3 2
-#define PIN_SHARP_4 3
-#define PIN_SHARP_5 4
-#define PIN_SHARP_6 5
-
-#define PIN_SONAR_AV_G 6 //ok
-#define PIN_SONAR_AV_D 7 //ok
-#define PIN_SONAR_AR_G 8 //ok
-#define PIN_SONAR_AR_D 9 //ok
 
 
 /*********************************************************************************/
@@ -144,14 +41,12 @@
 Task asservissement(PERIODE_ASSERV_MS);
 Task commLect(PERIODE_COM_LECTURE);
 Task commEcrit(PERIODE_COM_ECRITURE);
+Task readColorSensors(50);
 
-Servo servoArG;
-Servo servoArD;
+Adafruit_TCS34725 colorSensor1(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
+Adafruit_TCS34725 colorSensor2(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
 
-Adafruit_TCS34725 colorSensor1 = Adafruit_TCS34725(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
-Adafruit_TCS34725 colorSensor2 = Adafruit_TCS34725(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
-
-Robot batRobot(&servoArG, &servoArD, PERIODE_ASSERV_MS);
+Robot batRobot(&colorSensor1, &colorSensor2, PERIODE_ASSERV_MS);
 Comm batCom(&batRobot);
 Logger batLogger(&batCom, ENABLE_DEBUG, ENABLE_PC_COMM);
 
@@ -274,17 +169,6 @@ void litEtEnvoieSonar()
 
 #ifndef NO_PC_COMM
     batCom.sendSonars(ag, ad, rg, rd);
-#endif
-}
-
-void litEtEnvoieColorSensors()
-{
-	uint16_t r1, g1, b1, r2, g2, b2;
-	colorSensor1.getRawDataWithoutDelay(&r1, &g1, &b1);
-	colorSensor2.getRawDataWithoutDelay(&r2, &g2, &b2);
-
-#ifndef NO_PC_COMM
-	batCom.sendColorSensors((int)r1, (int)g1, (int)b1, (int)r2, (int)g2, (int)b2);
 #endif
 }
 
@@ -520,9 +404,17 @@ void loop()
     {
         batCom.sendPosition();
 		litEtEnvoieSonar();
-		litEtEnvoieColorSensors();
     }
 #endif
+
+	if (readColorSensors.ready())
+	{
+		if (batRobot.isColorSensorEnabled(0))
+			batRobot.readColorSensor(0);
+
+		if (batRobot.isColorSensorEnabled(1))
+			batRobot.readColorSensor(1);
+	}
 
     if (asservissement.ready())
     {
