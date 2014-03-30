@@ -290,6 +290,7 @@ void Adafruit_TCS34725::getColorInHSL(float *h, float *s, float *l)
     min = min(min(r, g), b);
     delta = max - min;
     
+	// hue
     if (r == max)
 		*h = 60 * (g - b) / delta;
     else if (g == max)
@@ -299,6 +300,15 @@ void Adafruit_TCS34725::getColorInHSL(float *h, float *s, float *l)
   
 	if (*h < 0)
 		*h += 360;
+
+	// lightness
+	*l = (max + min) / 2;
+
+	// saturation
+	if (delta == 0)
+		*s = 0;
+	else
+		*s = delta / (1 - abs(max + min - 1));
 }
 
 /**************************************************************************/
