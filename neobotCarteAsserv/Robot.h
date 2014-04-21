@@ -47,6 +47,14 @@ class Robot
         EnArriere = 2,
         Auto = 13,
     };
+
+	enum ColorSensorStatus
+	{
+		ColorUnchanged = 0,
+		ColorNothing = 1,
+		ColorYellow = 2,
+		ColorRed = 3,
+	};
   
     void teleport(Point point);
     void forceObjectif(Point point);
@@ -71,7 +79,7 @@ class Robot
 	void enableColorSensor(int sensorId);
 	void disableColorSensor(int sensorId);
 	bool isColorSensorEnabled(int sensorId);
-	void readColorSensor(int sensorId);
+	int readColorSensor(int sensorId);
 	void startPump(int pumpId);
 	void stopPump(int pumpId);
 
@@ -111,8 +119,8 @@ private:
 
 	bool _colorSensorEnabled[2];
 	int _colorSensorStatus[2];
-
 	Adafruit_TCS34725* _colorSensor[2];
+
 };
 
 #endif // ROBOT_H

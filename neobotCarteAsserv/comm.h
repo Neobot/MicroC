@@ -1,5 +1,5 @@
-#ifndef COM_H
-#define COM_H
+#ifndef COMM_H
+#define COMM_H
 
 /*
  * ----------------------------------------------------------------------------
@@ -40,15 +40,13 @@ public:
   void sendParameterNames();
   void sendAR(uint8_t instruction, bool ok);
   void sendSonars(int ag, int ad, int rg, int rd);
-  void sendColorSensors(int r1, int g1, int b1, int r2, int g2, int b2);
-  void sendMicroswitch(bool left, bool right);
+  //void sendColorSensors(int r1, int g1, int b1, int r2, int g2, int b2);
+  void sendEvent(uint8_t event, uint8_t parameter = 0);
   void sendPosition();
   void sendConsigne();
   void sendGo(bool isBlue);
   void restart();
   void quit();
-  void sendIsArrived();
-  void sendIsBlocked();
   void sendLog(const String& text);
   
   bool process_message(uint8_t data[], uint8_t instruction, uint8_t length);

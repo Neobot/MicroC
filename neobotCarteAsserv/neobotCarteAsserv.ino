@@ -31,7 +31,7 @@
 #include "Comm.h"
 #include "Logger.h"
 #include "Simulation.h"
-
+#include "Instructions.h"
 
 
 /*********************************************************************************/
@@ -409,11 +409,28 @@ void loop()
 
 	if (readColorSensors.ready())
 	{
-		if (batRobot.isColorSensorEnabled(0))
-			batRobot.readColorSensor(0);
+		for (int sensorId = 0; sensorId < 2; sensorId++)
+		{
+			if (batRobot.isColorSensorEnabled(sensorId))
+			{
+				int color = batRobot.readColorSensor(sensorId);
 
-		if (batRobot.isColorSensorEnabled(1))
-			batRobot.readColorSensor(1);
+				switch (color)
+				{
+				case Robot::ColorNothing:
+					batCom.sendEvent(EVENT_NO_OBJECT_DETECTED, sensorId);
+					break;
+				case Robot::ColorRed:
+					batCom.sendEvent(EVENT_RED_OBJECT_DETECTED, sensorId);
+					break;
+				case Robot::ColorYellow:
+					batCom.sendEvent(EVENT_YELLOW_OBJECT_DETECTED, sensorId);
+					break;
+				default:
+					break;
+				}
+			}
+		}
 	}
 
     if (asservissement.ready())
@@ -428,7 +445,7 @@ void loop()
         if(batRobot.passageAuPointSuivant())
         {
             batCom.sendConsigne();
-            batCom.sendIsArrived();
+			batCom.sendEvent(EVENT_IS_ARRIVED);
         }
 #endif
 

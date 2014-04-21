@@ -1,5 +1,5 @@
-#ifndef COM_H
-#define COM_H
+#ifndef INSTRUCTIONS_H
+#define INSTRUCTIONS_H
 
 // PC -> MicroC
 #define INSTR_DEST_ADD				1
@@ -36,6 +36,8 @@
 // actions
 #define ACTION_START_PUMP				1	// parameter = pump number
 #define ACTION_STOP_PUMP				2	// parameter = pump number
+#define ACTION_ENABLE_COLOR_SENSORS		10	// parameter = sensor number (1 or 2; 0 = all)
+#define ACTION_DISABLE_COLOR_SENSORS	11	// parameter = sensor number (1 or 2; 0 = all)
 
 // events
 #define EVENT_IS_ARRIVED				1

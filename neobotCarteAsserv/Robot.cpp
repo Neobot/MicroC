@@ -1,4 +1,5 @@
 #include "Robot.h"
+#include "IOConfig.h"
 
 Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, float periodAsserv, float x, float y, float theta) :
 	_pidDist(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE),
@@ -323,16 +324,23 @@ void Robot::stopAttente()
 
 void Robot::enableColorSensor(int sensorId)
 {
-	_colorSensorEnabled[sensorId] = 1;
-	_colorSensor[sensorId]->setInterrupt(false);
+	if (_colorSensorEnabled[sensorId] == 0)
+	{
+		_colorSensorEnabled[sensorId] = 1;
+		_colorSensorStatus[sensorId] = ColorNothing;
+		_colorSensor[sensorId]->setInterrupt(false);
+	}
 }
 
 
 void Robot::disableColorSensor(int sensorId)
 {
-	_colorSensorEnabled[sensorId] = 0;
-
-	_colorSensor[sensorId]->setInterrupt(true);
+	if (_colorSensorEnabled[sensorId] == 1)
+	{
+		_colorSensorEnabled[sensorId] = 0;
+		_colorSensorStatus[sensorId] = ColorNothing;
+		_colorSensor[sensorId]->setInterrupt(true);
+	}
 }
 
 bool Robot::isColorSensorEnabled(int sensorId)
@@ -340,14 +348,69 @@ bool Robot::isColorSensorEnabled(int sensorId)
 	return _colorSensorEnabled[sensorId];
 }
 
-void Robot::readColorSensor(int sensorId)
+int Robot::readColorSensor(int sensorId)
 {
+	ColorSensorStatus colorReturn = ColorUnchanged;
+
 	if (_colorSensor[sensorId]->isEnabled())
 	{
 		float h, s, l;
+		ColorSensorStatus color;
 
 		_colorSensor[sensorId]->getColorInHSL(&h, &s, &l);
+		// l = 0 -> white, l = 1 -> black
 
-		// to do: convert to meaninfull color (red, yellow, nothing)
+		if ((h >= 330 || h <= 30) && s > 0.5 && l > 0.3 && l < 0.8)			// red: hue = 0°
+			color = ColorRed;
+		else if (h >= 30 && h <= 90 && s > 0.5 && l > 0.3 && l < 0.8)	// yellow: hue = 60°
+			color = ColorYellow;
+		else
+			color = ColorNothing;
+
+		if (color != _colorSensorStatus[sensorId])		// color has changed
+		{
+			colorReturn = color;
+			_colorSensorStatus[sensorId] = color;
+		}
+	}
+
+	return colorReturn;
+}
+
+void Robot::startPump(int pumpId)
+{
+	switch (pumpId)
+	{
+	case 0:
+		digitalWrite(PIN_MOTEUR_1, HIGH);
+		digitalWrite(PIN_MOTEUR_2, HIGH);
+		break;
+	case 1:
+		digitalWrite(PIN_MOTEUR_1, HIGH);
+		break;
+	case 2:
+		digitalWrite(PIN_MOTEUR_2, HIGH);
+		break;
+	default:
+		break;
+	}
+}
+
+void Robot::stopPump(int pumpId)
+{
+	switch (pumpId)
+	{
+	case 0:
+		digitalWrite(PIN_MOTEUR_1, LOW);
+		digitalWrite(PIN_MOTEUR_2, LOW);
+		break;
+	case 1:
+		digitalWrite(PIN_MOTEUR_1, LOW);
+		break;
+	case 2:
+		digitalWrite(PIN_MOTEUR_2, LOW);
+		break;
+	default:
+		break;
 	}
 }

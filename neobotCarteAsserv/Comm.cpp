@@ -144,7 +144,6 @@ void Comm::sendAR(uint8_t instruction, bool ok)
     dataPtr = writeInt8(dataPtr, ok ? 1 : 0);
 
     protocol.sendMessage(INSTR_AR, 2, data);
-
 }
 
 void Comm::sendSonars(int ag, int ad, int rg, int rd)
@@ -172,17 +171,18 @@ void Comm::sendColorSensors(int r1, int g1, int b1, int r2, int g2, int b2)
 
 	protocol.sendMessage(INSTR_SEND_COLOR_SENSORS, 6, data);
 }
-
-void Comm::sendMicroswitch(bool left, bool right)
-{
-    uint8_t data[2];
-    uint8_t* dataPtr = &(data[0]);
-    dataPtr = writeInt8(dataPtr, left ? 1 : 0);
-    dataPtr = writeInt8(dataPtr, right ? 1 : 0);
-
-    protocol.sendMessage(INSTR_SEND_MICROSWITCH, 2, data);
-}
 */
+
+void Comm::sendEvent(uint8_t event, uint8_t parameter)
+{
+	uint8_t data[2];
+	uint8_t* dataPtr = &(data[0]);
+	dataPtr = writeInt8(dataPtr, event);
+	dataPtr = writeInt8(dataPtr, parameter);
+
+	protocol.sendMessage(INSTR_EVENT, 2, data);
+}
+
 void Comm::sendPosition()
 {
     uint8_t dir = robot->quelSens();
@@ -232,22 +232,6 @@ void Comm::quit()
 {
     uint8_t data[0];
     protocol.sendMessage(INSTR_QUIT, 0, data);
-}
-
-void Comm::sendIsArrived()
-{
-	uint8_t data[1];
-	uint8_t* dataPtr = &(data[0]);
-	dataPtr = writeInt8(dataPtr, (uint8_t)EVENT_IS_ARRIVED);
-	protocol.sendMessage(INSTR_EVENT, 1, data);
-}
-
-void Comm::sendIsBlocked()
-{
-	uint8_t data[1];
-	uint8_t* dataPtr = &(data[0]);
-	dataPtr = writeInt8(dataPtr, (uint8_t)EVENT_IS_BLOCKED);
-	protocol.sendMessage(INSTR_EVENT, 1, data);
 }
 
 void Comm::sendLog(const String& text)
@@ -350,7 +334,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
             _logger->println("Flush received");
         }
     }
-    else if (instruction == INSTR_ACTION && length == 3)
+	else if (instruction == INSTR_ACTION && length == 3)
     {
         uint8_t actionType;
         uint8_t parameter;
@@ -359,8 +343,21 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
 		switch (actionType)
         {
-        }
-
+		case ACTION_START_PUMP:
+			robot->startPump(parameter);
+			break;
+		case ACTION_STOP_PUMP:
+			robot->stopPump(parameter);
+			break;
+		case ACTION_ENABLE_COLOR_SENSORS:
+			robot->enableColorSensor(parameter);
+			break;
+		case ACTION_DISABLE_COLOR_SENSORS:
+			robot->disableColorSensor(parameter);
+			break;
+		default:
+			break;
+		}
     }
     else if (instruction == INSTR_SET_PARAMETERS)
     {
