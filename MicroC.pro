@@ -32,4 +32,5 @@ SOURCES += \
             neobotCarteAsserv/Simulation.h \
 			neobotCarteAsserv/IOConfig.h \
 			neobotCarteAsserv/Parameters.h \
+			neobotCarteAsserv/Instructions.h \
 			libraries/AdafruitTCS34725master/Adafruit_TCS34725.h
