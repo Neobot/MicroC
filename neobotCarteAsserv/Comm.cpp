@@ -350,10 +350,28 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 			robot->stopPump(parameter);
 			break;
 		case ACTION_ENABLE_COLOR_SENSORS:
-			robot->enableColorSensor(parameter);
+			if (parameter < 0)
+			{
+				for (int sensorId = 0; sensorId < 2; sensorId++)
+					robot->enableColorSensor(sensorId);
+			}
+			else if (parameter == 1)
+				robot->enableColorSensor(0);
+			else if (parameter == 2)
+				robot->enableColorSensor(1);
+
 			break;
 		case ACTION_DISABLE_COLOR_SENSORS:
-			robot->disableColorSensor(parameter);
+			if (parameter < 0)
+			{
+				for (int sensorId = 0; sensorId < 2; sensorId++)
+					robot->disableColorSensor(sensorId);
+			}
+			else if (parameter == 1)
+				robot->disableColorSensor(0);
+			else if (parameter == 2)
+				robot->disableColorSensor(1);
+
 			break;
 		default:
 			break;
