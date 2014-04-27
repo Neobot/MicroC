@@ -348,33 +348,29 @@ bool Robot::isColorSensorEnabled(int sensorId)
 	return _colorSensorEnabled[sensorId];
 }
 
-int Robot::readColorSensor(int sensorId)
+bool Robot::readColorSensor(int sensorId, int *color)
 {
-	ColorSensorStatus colorReturn = ColorUnchanged;
-
 	if (_colorSensor[sensorId]->isEnabled())
 	{
 		float h, s, l;
-		ColorSensorStatus color;
 
-		_colorSensor[sensorId]->getColorInHSL(&h, &s, &l);
-		// l = 0 -> white, l = 1 -> black
+		_colorSensor[sensorId]->getColorInHSL(&h, &s, &l); // l = 0 -> white, l = 1 -> black
 
 		if ((h >= 330 || h <= 30) && s > 0.5 && l > 0.3 && l < 0.8)			// red: hue = 0°
-			color = ColorRed;
+			*color = ColorRed;
 		else if (h >= 30 && h <= 90 && s > 0.5 && l > 0.3 && l < 0.8)	// yellow: hue = 60°
-			color = ColorYellow;
+			*color = ColorYellow;
 		else
-			color = ColorNothing;
+			*color = ColorNothing;
 
-		if (color != _colorSensorStatus[sensorId])		// color has changed
+		if (*color != _colorSensorStatus[sensorId])		// color has changed
 		{
-			colorReturn = color;
-			_colorSensorStatus[sensorId] = color;
+			_colorSensorStatus[sensorId] = *color;
+			return true;
 		}
 	}
 
-	return colorReturn;
+	return false;
 }
 
 void Robot::startPump(int pumpId)

@@ -413,22 +413,10 @@ void loop()
 		{
 			if (batRobot.isColorSensorEnabled(sensorId))
 			{
-				int color = batRobot.readColorSensor(sensorId);
+				int color;
 
-				switch (color)
-				{
-				case Robot::ColorNothing:
-					batCom.sendEvent(EVENT_NO_OBJECT_DETECTED, sensorId);
-					break;
-				case Robot::ColorRed:
-					batCom.sendEvent(EVENT_RED_OBJECT_DETECTED, sensorId);
-					break;
-				case Robot::ColorYellow:
-					batCom.sendEvent(EVENT_YELLOW_OBJECT_DETECTED, sensorId);
-					break;
-				default:
-					break;
-				}
+				if (batRobot.readColorSensor(sensorId, &color))
+					batCom.sendSensorEvent(2, sensorId, color);
 			}
 		}
 	}

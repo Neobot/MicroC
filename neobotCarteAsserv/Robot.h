@@ -50,10 +50,9 @@ class Robot
 
 	enum ColorSensorStatus
 	{
-		ColorUnchanged = 0,
-		ColorNothing = 1,
-		ColorYellow = 2,
-		ColorRed = 3,
+		ColorNothing = 0,
+		ColorYellow = 1,
+		ColorRed = 2,
 	};
   
     void teleport(Point point);
@@ -79,7 +78,7 @@ class Robot
 	void enableColorSensor(int sensorId);
 	void disableColorSensor(int sensorId);
 	bool isColorSensorEnabled(int sensorId);
-	int readColorSensor(int sensorId);
+	bool readColorSensor(int sensorId, int *color);
 	void startPump(int pumpId);
 	void stopPump(int pumpId);
 

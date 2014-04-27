@@ -112,7 +112,7 @@ void Comm::sendParameterNames()
     char data[len];
     names.toCharArray(data, len);
 
-	protocol.sendMessage(INSTR_SEND_PARAMETERS_NAMES, len, (uint8_t*)data);
+	protocol.sendMessage(INSTR_PARAMETERS_NAMES, len, (uint8_t*)data);
 }
 
 void Comm::sendParameters()
@@ -133,7 +133,7 @@ void Comm::sendParameters()
         dataPtr = writeFloat(dataPtr, value);
     }
 
-	protocol.sendMessage(INSTR_SEND_PARAMETERS, _nbRegisteredParameters * 4 + 1, data);
+	protocol.sendMessage(INSTR_PARAMETERS, _nbRegisteredParameters * 4 + 1, data);
 }
 
 void Comm::sendAR(uint8_t instruction, bool ok)
@@ -181,6 +181,15 @@ void Comm::sendEvent(uint8_t event, uint8_t parameter)
 	dataPtr = writeInt8(dataPtr, parameter);
 
 	protocol.sendMessage(INSTR_EVENT, 2, data);
+}
+
+void Comm::sendSensorEvent(uint8_t sensorType, uint8_t sensorNo, uint8_t sensorState)
+{
+	uint8_t data[3];
+	uint8_t* dataPtr = &(data[0]);
+	dataPtr = writeInt8(dataPtr, sensorType);
+	dataPtr = writeInt8(dataPtr, sensorNo);
+	dataPtr = writeInt8(dataPtr, sensorState);
 }
 
 void Comm::sendPosition()
@@ -296,7 +305,17 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
             _logger->println(p.typeDeplacement);
         }
     }
-    else if (instruction == INSTR_SET_POS && length == 6)
+	else if (instruction == INSTR_FLUSH)
+	{
+		//stop the robot and flush the remaining list of point
+		robot->stop();
+		ok = true;
+		if (_logger)
+		{
+			_logger->println("Flush received");
+		}
+	}
+	else if (instruction == INSTR_SET_POS && length == 6)
     {
         //set the start point
         int16_t x, y, thetaInt;
@@ -324,16 +343,52 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
             _logger->println(p.theta);
         }
     }
-    else if (instruction == INSTR_FLUSH)
-    {
-        //stop the robot and flush the remaining list of point
-        robot->stop();
-        ok = true;
-        if (_logger)
-        {
-            _logger->println("Flush received");
-        }
-    }
+	else if (instruction == INSTR_ENABLE_SENSOR && length == 3)
+	{
+		uint8_t sensorType;
+		uint8_t sensorNo;
+		data = readUInt8(data, sensorType);
+		data = readUInt8(data, sensorNo);
+
+		switch (sensorType)
+		{
+		case 2:
+			if (sensorNo <= 0)
+				for (int sensorId = 0; sensorId < 2; sensorId++)
+					robot->enableColorSensor(sensorId);
+			else if (sensorNo == 1)
+				robot->enableColorSensor(0);
+			else if (sensorNo == 2)
+				robot->enableColorSensor(1);
+
+			break;
+		default:
+			break;
+		}
+	}
+	else if (instruction == INSTR_DISABLE_SENSOR && length == 3)
+	{
+		uint8_t sensorType;
+		uint8_t sensorNo;
+		data = readUInt8(data, sensorType);
+		data = readUInt8(data, sensorNo);
+
+		switch (sensorType)
+		{
+		case 2:
+			if (sensorNo <= 0)
+				for (int sensorId = 0; sensorId < 2; sensorId++)
+					robot->disableColorSensor(sensorId);
+			else if (sensorNo == 1)
+				robot->disableColorSensor(0);
+			else if (sensorNo == 2)
+				robot->disableColorSensor(1);
+
+			break;
+		default:
+			break;
+		}
+	}
 	else if (instruction == INSTR_ACTION && length == 3)
     {
         uint8_t actionType;
@@ -348,32 +403,6 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 			break;
 		case ACTION_STOP_PUMP:
 			robot->stopPump(parameter);
-			break;
-		case ACTION_ENABLE_COLOR_SENSORS:
-			if (parameter < 0)
-			{
-				for (int sensorId = 0; sensorId < 2; sensorId++)
-					robot->enableColorSensor(sensorId);
-			}
-			else if (parameter == 1)
-				robot->enableColorSensor(0);
-			else if (parameter == 2)
-				robot->enableColorSensor(1);
-
-			break;
-		case ACTION_DISABLE_COLOR_SENSORS:
-			if (parameter < 0)
-			{
-				for (int sensorId = 0; sensorId < 2; sensorId++)
-					robot->disableColorSensor(sensorId);
-			}
-			else if (parameter == 1)
-				robot->disableColorSensor(0);
-			else if (parameter == 2)
-				robot->disableColorSensor(1);
-
-			break;
-		default:
 			break;
 		}
     }
