@@ -9,6 +9,7 @@
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"	// color sensors
 #include "Parameters.h"
+#include "Instructions.h"
 
 /*
  * ----------------------------------------------------------------------------
@@ -48,11 +49,11 @@ class Robot
         Auto = 13,
     };
 
-	enum ColorSensorStatus
+	enum ColorSensorId
 	{
-		ColorNothing = 0,
-		ColorYellow = 1,
-		ColorRed = 2,
+		ColorSensor1,
+		ColorSensor2,
+		ColorSensorCount
 	};
   
     void teleport(Point point);
@@ -78,7 +79,7 @@ class Robot
 	void enableColorSensor(int sensorId);
 	void disableColorSensor(int sensorId);
 	bool isColorSensorEnabled(int sensorId);
-	bool readColorSensor(int sensorId, int *color);
+	bool colorSensorValueHasChanged(int sensorId, ColorSensorState *color);
 	void startPump(int pumpId);
 	void stopPump(int pumpId);
 
@@ -117,7 +118,7 @@ private:
     bool _tourneFini;
 
 	bool _colorSensorEnabled[2];
-	int _colorSensorStatus[2];
+	ColorSensorState _colorSensorStatus[2];
 	Adafruit_TCS34725* _colorSensor[2];
 
 };

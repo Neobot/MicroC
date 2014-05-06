@@ -30,12 +30,51 @@
 #define INSTR_PING					254
 #define INSTR_AR					255
 
-// actions
-#define ACTION_START_PUMP				1	// parameter = pump number
-#define ACTION_STOP_PUMP				2	// parameter = pump number
+enum RobotAction
+{
+	NO_ACTION = -1,
+	ACTION_START_PUMP = 1,
+	ACTION_STOP_PUMP = 2
+};
 
-// events
-#define EVENT_IS_ARRIVED				1
-#define EVENT_IS_BLOCKED				2
+enum RobotEvent
+{
+	NO_EVENT = -1,
+	EVENT_IS_ARRIVED = 1,
+	EVENT_IS_BLOCKED = 2,
+	EVENT_QUIT = 3,
+	EVENT_RESTART = 4
+};
+
+enum SensorType
+{
+	SharpSensor = 0,
+	MicroswitchSensor = 1,
+	ColorSensor = 2
+};
+
+enum SharpState
+{
+	SharpNothingDetected,
+	SharpObjectDetected,
+	SharpObjectVeryClose,
+};
+
+enum MicroswicthState
+{
+	MicroswicthOff,
+	MicroswicthOn
+};
+
+enum ColorSensorState
+{
+	ColorUnknown,
+	ColorRed,
+	ColorGreen,
+	ColorBlue,
+	ColorYellow,
+	ColorWhite,
+	ColorBlack
+};
 
 #endif

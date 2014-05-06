@@ -327,7 +327,7 @@ void Robot::enableColorSensor(int sensorId)
 	if (_colorSensorEnabled[sensorId] == 0)
 	{
 		_colorSensorEnabled[sensorId] = 1;
-		_colorSensorStatus[sensorId] = ColorNothing;
+		_colorSensorStatus[sensorId] = ColorUnknown;
 		_colorSensor[sensorId]->setInterrupt(false);
 	}
 }
@@ -338,7 +338,7 @@ void Robot::disableColorSensor(int sensorId)
 	if (_colorSensorEnabled[sensorId] == 1)
 	{
 		_colorSensorEnabled[sensorId] = 0;
-		_colorSensorStatus[sensorId] = ColorNothing;
+		_colorSensorStatus[sensorId] = ColorUnknown;
 		_colorSensor[sensorId]->setInterrupt(true);
 	}
 }
@@ -348,9 +348,9 @@ bool Robot::isColorSensorEnabled(int sensorId)
 	return _colorSensorEnabled[sensorId];
 }
 
-bool Robot::readColorSensor(int sensorId, int *color)
+bool Robot::colorSensorValueHasChanged(int sensorId, ColorSensorState *color)
 {
-	if (_colorSensor[sensorId]->isEnabled())
+	if (isColorSensorEnabled(sensorId))
 	{
 		float h, s, l;
 
@@ -361,7 +361,7 @@ bool Robot::readColorSensor(int sensorId, int *color)
 		else if (h >= 30 && h <= 90 && s > 0.5 && l > 0.3 && l < 0.8)	// yellow: hue = 60°
 			*color = ColorYellow;
 		else
-			*color = ColorNothing;
+			*color = ColorUnknown;
 
 		if (*color != _colorSensorStatus[sensorId])		// color has changed
 		{

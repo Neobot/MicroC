@@ -210,6 +210,19 @@ int readColor()
     return color;
 }
 
+void sendColorSensorsEvents()
+{
+	for (int sensorId = 0; sensorId < Robot::ColorSensorCount; ++sensorId)
+	{
+		if (batRobot.isColorSensorEnabled(sensorId))
+		{
+			ColorSensorState color;
+			if (batRobot.colorSensorValueHasChanged(sensorId, &color))
+				batCom.sendSensorEvent(ColorSensor, sensorId + 1, color); //in the comm sensors id starts at 1
+		}
+	}
+}
+
 
 /*********************************************************************************/
 /*                               Initialisation                                  */
@@ -409,16 +422,7 @@ void loop()
 
 	if (readColorSensors.ready())
 	{
-		for (int sensorId = 0; sensorId < 2; sensorId++)
-		{
-			if (batRobot.isColorSensorEnabled(sensorId))
-			{
-				int color;
-
-				if (batRobot.readColorSensor(sensorId, &color))
-					batCom.sendSensorEvent(2, sensorId, color);
-			}
-		}
+		sendColorSensorsEvents();
 	}
 
     if (asservissement.ready())

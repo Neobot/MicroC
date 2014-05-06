@@ -231,18 +231,6 @@ void Comm::sendGo(bool isBlue)
     protocol.sendMessage(INSTR_GO, 1, data);
 }
 
-void Comm::restart()
-{
-    uint8_t data[0];
-    protocol.sendMessage(INSTR_RESTART, 0, data);
-}
-
-void Comm::quit()
-{
-    uint8_t data[0];
-    protocol.sendMessage(INSTR_QUIT, 0, data);
-}
-
 void Comm::sendLog(const String& text)
 {
     int len = text.length() + 1;
