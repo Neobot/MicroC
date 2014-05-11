@@ -24,6 +24,7 @@ PID::PID(bool actif, float kp, float kd, float ki)
 	this->_kp = kp;
 	this->_kd = kd;
     this->_ki = ki;
+    _valMaxCorrection = VALUE_MAX_PID;
 }
 
 float PID::calculCommande(float consigne, float distanceRealiseEnNormeConsigne)

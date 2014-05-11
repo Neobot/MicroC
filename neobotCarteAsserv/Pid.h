@@ -17,21 +17,21 @@ public:
     };
 
     float _kp; // gain proportionnel
-    float _kd; // gain derivé
+    float _kd; // gain derivï¿½
     float _ki; //gain integrale
     
     float _correction; // la correction a ajouter
     
     float _erreur; // erreur courante
     float _lastErreur; // precedente erreur
-    float _prevErreurs[NB_VALUE_FOR_PID_DERIVATE]; // tableau des erreurs précedentes pour le gain integrale
+    float _prevErreurs[NB_VALUE_FOR_PID_INTEGRAL]; // tableau des erreurs prï¿½cedentes pour le gain integrale
     int _index; // index courant du tableau
     
     float _valMaxCorrection;
 
     EtatPID _etatCourant;
 
-    PID(bool actif, float kp = 1.0, float kd = 1.0, float ki = 0.0, float _valMaxCorrection = VALUE_MAX_PID);
+    PID(bool actif, float kp = 1.0, float kd = 1.0, float ki = 0.0);
 
     float calculCommande(float consigne, float distanceRealise);
     void seuilPid();
