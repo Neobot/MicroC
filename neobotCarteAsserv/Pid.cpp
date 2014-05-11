@@ -17,13 +17,13 @@
 #include "Arduino.h"
 #include "Pid.h"
 
-PID::PID(bool actif, float kp, float kd)
+PID::PID(bool actif, float kp, float kd, float ki)
 {
 	this->changeEtat(actif);
-	this->reset();
 	
 	this->_kp = kp;
 	this->_kd = kd;
+    this->_ki = ki;
 }
 
 float PID::calculCommande(float consigne, float distanceRealiseEnNormeConsigne)
@@ -32,24 +32,63 @@ float PID::calculCommande(float consigne, float distanceRealiseEnNormeConsigne)
 	
 	if (this->_etatCourant == Actif)
 	{
+        float derive;
+        float integral;
+        
+        this->_lastErreur = this->_erreur;   
 		this->_erreur = this->_precedenteConsigne - distanceRealiseEnNormeConsigne;
-		this->_commande += this->_kp * this->_erreur - this->_kd * distanceRealiseEnNormeConsigne;
+        
+        derive = this->_erreur - this->_lastErreur;
+        
+        integral = 0.0;
+        for(int i = 0; i < NB_VALUE_FOR_PID_INTEGRAL; ++i)
+          integral += this->_prevErreurs[i];
+        
+        this->_correction = his->_kp * this->_erreur + this->_kd * derive + this->_ki * integral;  
+        
+        this->seuilPid();
+        
+        this->addPrevErreur();
 	}
-	this->_precedenteConsigne = consigne;
 	
-	return this->_commande;
+	return consigne + this->_correction;
+}
+
+float PID::seuilPid()
+{
+    if ( this->_correction > 0)
+    {
+        this->_correction = min(this->_correction, this->_valMaxCorrection);
+    }
+    else
+    {
+        this->_correction = max(this->_correction, this->_valMaxCorrection);
+    }
 }
 
 void PID::reset()
 {
-	this->_consigne = 0.0;
-	this->_precedenteConsigne = 0.0;
 	this->_erreur = 0.0;
-	this->_commande = 0.0;
+	this->_correction = 0.0;
+    this->_lastErreur = 0.0;
+    this->_index = 0;
+    
+    for(int i = 0; i < NB_VALUE_FOR_PID_INTEGRAL; ++i)
+        this->_prevErreurs[i] = 0;
+}
+
+void PID::addPrevErreur()
+{
+    ++this->_index;
+    if (this->_index >= NB_VALUE_FOR_PID_INTEGRAL)
+      this->_index = 0;
+      
+    this->_prevErreurs[this->_index] = this->_erreur;
 }
 
 void PID::changeEtat(bool actif)
 {
+    this->reset();
 	if (actif)
 		this->_etatCourant = Actif;
 	else

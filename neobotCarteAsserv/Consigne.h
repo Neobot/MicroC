@@ -1,3 +1,8 @@
+#ifndef CONSIGNE_H
+#define CONSIGNE_H
+
+#include "Parameters.h"
+
 /*
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
@@ -14,10 +19,7 @@
  * Author : Neobot
  */
 
-#ifndef CONSIGNE_H
-#define CONSIGNE_H
-
-const float COMMANDE_MOTEUR_MAX = 4095.0;
+const float COMMANDE_MOTEUR_MAX = 65535.0;
 const float DIST_ARRIVE_AVEC_FREINAGE = 5.0;
 const float DIST_ARRIVE_SANS_FREINAGE = 5.0;
 
@@ -32,7 +34,7 @@ class Consigne
       void setAmaxParcourt(float amax);
       void majDistAccDcc();
       void majConsigneMax();
-      void majVariationConsigneMax(float distRestante = 99999999);
+      void majVariationConsigneMax();
       float transformeDeltaDistanceEnConsigne(float delta);
       bool estArrive();
       bool calcEstArrive();
@@ -54,6 +56,8 @@ class Consigne
       float _distRealise;
       
       float _distDemande;
+      
+      float _sens;
       
       float _distAcc;
       float _distDcc;

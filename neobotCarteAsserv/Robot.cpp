@@ -2,10 +2,10 @@
 #include "IOConfig.h"
 
 Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, float periodAsserv, float x, float y, float theta) :
-	_pidDist(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE),
-	_pidOrientation(ACTIVE_PID_ANGLE, KP_ANGLE, KD_ANGLE),
-	_consigneDist(VITESSE_MAX, ACCELARATION_MAX_EN_REEL_LIN, periodAsserv, 1.4, 5),
-	_consigneOrientation(VITESSE_MAX_ROT, ACCELARATION_MAX_EN_REEL_ROT, periodAsserv, 0.05)
+	_pidDist(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE, KI_DISTANCE),
+	_pidOrientation(ACTIVE_PID_ANGLE, KP_ANGLE, KD_ANGLE, KI_ANGLE),
+	_consigneDist(VITESSE_MAX, ACCELARATION_MAX_EN_REEL_LIN, periodAsserv, COEFF_FREINAGE_DIST, DIST_ARRIVE_DIST),
+	_consigneOrientation(VITESSE_MAX_ROT, ACCELARATION_MAX_EN_REEL_ROT, periodAsserv, COEFF_FREINAGE_ANG, DIST_ARRIVE_ANG)
 {
     _tourneFini = false;
     _pingReceived = false;
@@ -109,7 +109,7 @@ void Robot::majPosition(float pasRoueGauche, float pasRoueDroite)
 
 void Robot::calculConsigne()
 {
-    float thetaDemande = _deltaOrientRad * ENTRAXE_MM;
+    float thetaDemande = _deltaOrientRad * ENTRAXE_MM / 2.0;
 
     if (_typeDeplacement == TourneEtAvance)
     {
@@ -120,35 +120,30 @@ void Robot::calculConsigne()
     {
         if (_consigneOrientation.calcEstArrive() == false && !_tourneFini)
         {
-            _consigneDist.calculConsigne(_deltaDistMm);
+            _consigneDist._consigne = 0.0;
             _consigneOrientation.calculConsigne(thetaDemande);
         }
-        else if (_typeDeplacement == TournePuisAvance)
+        else
         {
             if (!_tourneFini)
             {
                 _tourneFini = true;
             }
-            _consigneDist._consigne = _consigneDist.calculConsigne(_deltaDistMm);
-            _consigneOrientation.calculConsigne(thetaDemande);
+            _consigneDist.calculConsigne(_deltaDistMm);
+            _consigneOrientation._consigne = 0.0;
         }
     }
     else if (_typeDeplacement == TourneSeulement)
     {
-        _consigneDist._consigne = 0;
+        _consigneDist._consigne = 0.0;
         _consigneOrientation.calculConsigne(thetaDemande);
     }
     else if (_typeDeplacement == AvanceSeulement)
     {
-        _consigneOrientation._consigne = 0;
+        _consigneOrientation._consigne = 0.0;
         _consigneDist.calculConsigne(_deltaDistMm);
     }
 
-
-    //  if (_consigneDist.calcEstArrive())
-    //  {
-    //    _consigneOrientation._consigne = 0;
-    //  }
 }
 
 void Robot::calculCommande()
@@ -170,32 +165,14 @@ void Robot::calculCommande()
                 );
     _pidOrientation.calculCommande(
                 _consigneOrientation._consigne,
-                _consigneOrientation.transformeDeltaDistanceEnConsigne(_deltaOrientRad * ENTRAXE_MM)
+                _consigneOrientation.transformeDeltaDistanceEnConsigne(_deltaOrientRad * ENTRAXE_MM / 2.0)
                 );
     
     // calcule des commandes moteurs
-    float commandeRoueDroite = _pidDist._commande + _pidOrientation._commande;
-    float commandeRoueGauche = _pidDist._commande - _pidOrientation._commande;
-
-    float rapportDroite = 1.0;
-    float rapportGauche = 1.0;
-
-    if (fabs(commandeRoueDroite) > COMMANDE_MOTEUR_MAX || fabs(commandeRoueGauche) > COMMANDE_MOTEUR_MAX)
-    {
-        if (fabs(commandeRoueDroite) > fabs(commandeRoueGauche))
-        {
-            rapportDroite = 1.0;
-            rapportGauche = commandeRoueDroite != 0 ? fabs(commandeRoueGauche) / fabs(commandeRoueDroite) : 1;
-        }
-        else
-        {
-            rapportDroite = commandeRoueGauche != 0 ? fabs(commandeRoueDroite) / fabs(commandeRoueGauche) : 1;
-            rapportGauche = 1.0;
-        }
-    }
-
-    _commandeRoueDroite = (int) (rapportDroite * filtreCommandeRoue(commandeRoueDroite));
-    _commandeRoueGauche = (int) (rapportGauche * filtreCommandeRoue(commandeRoueGauche));
+    
+    _commandeRoueDroite = (int) filtreCommandeRoue(_pidDist._commande + _pidOrientation._commande);
+    _commandeRoueGauche = (int) filtreCommandeRoue(_pidDist._commande - _pidOrientation._commande);
+    
 }
 
 float Robot::filtreCommandeRoue(float value)
@@ -209,10 +186,10 @@ float Robot::filtreCommandeRoue(float value)
         value = -COMMANDE_MOTEUR_MAX;
     }
 
-    if (_consigneDist.calcEstArrive() == true)
+    /*if (_consigneDist.calcEstArrive() == true)
     {
         value = 0;
-    }
+    }*/
 
 	float commande = (MAX_PWM_MOTORS * (value + COMMANDE_MOTEUR_MAX) / (2 * COMMANDE_MOTEUR_MAX)) * RATIO_PWM;
 
@@ -240,21 +217,21 @@ void Robot::vaEnXY(float x, float y, bool estPointArret, float vitessMax)
     
     switch (_typeAsserv)
     {
-    case EnArriere:
-        dist = -1.0 * dist;
-        dTheta -= PI;
-        break;
-
-    case Auto:
-        if ((dTheta > PI / 2.0 && dTheta < 3.0 * PI / 2.0) || (dTheta < -PI / 2.0 && dTheta > -3.0 * PI / 2.0))
-        {
-            dTheta -= PI;
+        case EnArriere:
             dist = -1.0 * dist;
-        }
-        break;
+            dTheta -= PI;
+            break;
 
-    default:
-        break;
+        case Auto:
+            if ((dTheta > PI / 2.0 && dTheta < 3.0 * PI / 2.0) || (dTheta < -PI / 2.0 && dTheta > -3.0 * PI / 2.0))
+            {
+                dTheta -= PI;
+                dist = -1.0 * dist;
+            }
+            break;
+
+        default:
+            break;
     }
 
     while ( dTheta > PI)
