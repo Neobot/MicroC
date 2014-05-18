@@ -169,9 +169,9 @@ void Robot::calculCommande()
                 );
     
     // calcule des commandes moteurs
-    
-    _commandeRoueDroite = (int) filtreCommandeRoue(_pidDist._commande + _pidOrientation._commande);
-    _commandeRoueGauche = (int) filtreCommandeRoue(_pidDist._commande - _pidOrientation._commande);
+    // -1 devant... ils doivent être cablé à l'envers...
+    _commandeRoueDroite = (int) filtreCommandeRoue(-1.0*(_pidDist._commande - _pidOrientation._commande));
+    _commandeRoueGauche = (int) filtreCommandeRoue(-1.0*(_pidDist._commande + _pidOrientation._commande));
     
 }
 
@@ -191,9 +191,7 @@ float Robot::filtreCommandeRoue(float value)
         value = 0;
     }*/
 
-	float commande = (MAX_PWM_MOTORS * (value + COMMANDE_MOTEUR_MAX) / (2 * COMMANDE_MOTEUR_MAX)) * RATIO_PWM;
-
-	return constrain(commande, 0, MAX_PWM_MOTORS);
+	return (MAX_PWM_MOTORS * (value + COMMANDE_MOTEUR_MAX) / (2 * COMMANDE_MOTEUR_MAX));
 }
 
 void Robot::avanceDe(float avance, bool avecFreinage, float vitessMax) // en mm

@@ -1,13 +1,15 @@
-//#define COUNTDOWN
+#define COUNTDOWN
 //#define DEBUG_RECEIVED_COMM_INSTRUCTION
 #define NO_JACK
-#define SIMULATION						// simulates motors & robot movements
+//#define SIMULATION						// simulates motors & robot movements
 #define NO_TPS_MATCH
 
 #define ENABLE_DEBUG		true		// if false, disable all logging
 #define ENABLE_PC_COMM		true		// enable comm to PC and redirect debug messages to PC
 //#define DEBUG_ENCODER
 //#define DEBUG_POSITION
+//#define DEBUG_PID
+//#define DEBUG_CONSIGNE_MOTEUR
 //#define DEBUG_CONSIGNE_LIN
 //#define DEBUG_CONSIGNE_ROT
 //#define DEBUG_ULTRASON
@@ -35,6 +37,7 @@
 #define VITESSE_MAX_ROT .75 * VITESSE_MAX_REEL
 
 #define MAX_PWM_MOTORS 65535.0
+#define MINI_MOTOR 10
 #define OFFSET 0.0
 #define RATIO_PWM 1.0 // pwm = OFFSET + consigne * RATIO_PWM = OFFSET + consigne * (MAX_PWM_MOTORS - OFFSET) / MAX_PWM_MOTORS
 
@@ -48,14 +51,14 @@
 
 // PID
 #define ACTIVE_PID_DISTANCE true
-#define KP_DISTANCE 0.01
-#define KD_DISTANCE 0.0
-#define KI_DISTANCE 0.0
+#define KP_DISTANCE 2.2  
+#define KD_DISTANCE 0.8 
+#define KI_DISTANCE 0.0 // ca fout la merde ;)
 
 #define ACTIVE_PID_ANGLE true
-#define KP_ANGLE 0.50
-#define KD_ANGLE 0.0
-#define KI_ANGLE 0.0
+#define KP_ANGLE 1.6
+#define KD_ANGLE 1.9
+#define KI_ANGLE 0.0 // ca fout la merde ;)
 
 // Odometrie
 #define COEFF_CORRECTION_TAILLE_ROUE_FOLLE 1

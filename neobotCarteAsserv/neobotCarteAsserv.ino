@@ -44,11 +44,13 @@ Task commEcrit(PERIODE_COM_ECRITURE);
 Task readColorSensors(50);
 
 Adafruit_TCS34725 colorSensor1(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
-Adafruit_TCS34725 colorSensor2(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
+Adafruit_TCS34725 colorSensor2(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X); // ecrit wire1 mais non compilable
 
 Robot batRobot(&colorSensor1, &colorSensor2, PERIODE_ASSERV_MS);
 Comm batCom(&batRobot);
 Logger batLogger(&batCom, ENABLE_DEBUG, ENABLE_PC_COMM);
+
+
 
 #ifdef SIMULATION
 	Simulation simMotorL(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, MAX_PWM_MOTORS, 1.4, 0.01);
@@ -125,9 +127,22 @@ void MAJPosition()
 void envoiConsigne()
 {
 #ifndef SIMULATION
-    digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, batRobot._commandeRoueGauche == 0 ? LOW : HIGH);	// stop motor if command is zero
-    digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, batRobot._commandeRoueDroite == 0 ? LOW : HIGH);
 
+    bool stopMotG = batRobot._commandeRoueGauche >= ((MAX_PWM_MOTORS - 1.0) / 2.0 - MINI_MOTOR) && batRobot._commandeRoueGauche <= ((MAX_PWM_MOTORS - 1.0) / 2.0 + MINI_MOTOR);
+    bool stopMotD = batRobot._commandeRoueDroite >= ((MAX_PWM_MOTORS - 1.0) / 2.0 - MINI_MOTOR) && batRobot._commandeRoueDroite <= ((MAX_PWM_MOTORS - 1.0) / 2.0 + MINI_MOTOR);
+
+    digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, stopMotG ? LOW : HIGH);	// stop motor if command is zero
+    digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, stopMotD ? LOW : HIGH);
+
+#ifdef DEBUG_CONSIGNE_MOTEUR
+  
+    batLogger.print("g=");
+    batLogger.print(batRobot._commandeRoueGauche);
+    batLogger.print(" d=");
+    batLogger.print(batRobot._commandeRoueDroite);
+    batLogger.println(" ");
+  
+#endif
 	pwm_write_duty(PIN_MOTEUR_GAUCHE_SENS, batRobot._commandeRoueGauche);
 	pwm_write_duty(PIN_MOTEUR_DROITE_SENS, batRobot._commandeRoueDroite);
 #else
@@ -475,6 +490,26 @@ void loop()
         }
 #endif
 
+
+#ifdef DEBUG_PID
+
+            batLogger.print("Consigne D : ");
+            batLogger.print(batRobot._consigneDist._consigne);
+            batLogger.print(" R : ");
+            batLogger.print(batRobot._consigneOrientation._consigne);
+            batLogger.println(" ");
+            batLogger.print(" PID correction D : ");
+            batLogger.print(batRobot._pidDist._correction);
+            batLogger.print(" R: ");
+            batLogger.print(batRobot._pidOrientation._correction);
+            batLogger.println(" ");
+            batLogger.print(" PID commande D :");
+            batLogger.print(batRobot._pidDist._commande);
+            batLogger.print(" R : ");
+            batLogger.print(batRobot._pidOrientation._commande);
+            batLogger.println(" ");
+#endif
+
 #ifdef DEBUG_POSITION
         //if (batRobot._consigneDist.calcEstArrive() == false)
         {
@@ -505,8 +540,6 @@ void loop()
             // servoArG.detach();
             //servoArD.detach();
 
-            while(1)
-            {
                 batLogger.print("xp=");
                 batLogger.print(batRobot.pointSuivant.x);
                 batLogger.print(" yp=");
@@ -518,7 +551,6 @@ void loop()
                 batLogger.print(" t=");
                 batLogger.print(batRobot.position.theta);
                 batLogger.println(" ");
-            }
     #endif
 
     #ifdef DEBUG_ENCODER

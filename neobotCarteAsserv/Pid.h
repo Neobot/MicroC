@@ -21,6 +21,8 @@ public:
     float _ki; //gain integrale
     
     float _correction; // la correction a ajouter
+    float _precedenteConsigne;
+    float _commande;
     
     float _erreur; // erreur courante
     float _lastErreur; // precedente erreur
@@ -31,7 +33,7 @@ public:
 
     EtatPID _etatCourant;
 
-    PID(bool actif, float kp = 1.0, float kd = 1.0, float ki = 0.0);
+    PID(bool actif, float kp = 0.0, float kd = 0.0, float ki = 0.0);
 
     float calculCommande(float consigne, float distanceRealise);
     void seuilPid();

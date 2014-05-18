@@ -29,41 +29,44 @@ PID::PID(bool actif, float kp, float kd, float ki)
 
 float PID::calculCommande(float consigne, float distanceRealiseEnNormeConsigne)
 {
-	this->_commande = consigne;
-	
+	_correction = 0.0;
 	if (this->_etatCourant == Actif)
 	{
-        float derive;
-        float integral;
-        
-        this->_lastErreur = this->_erreur;   
-		this->_erreur = this->_precedenteConsigne - distanceRealiseEnNormeConsigne;
-        
-        derive = this->_erreur - this->_lastErreur;
-        
-        integral = 0.0;
-        for(int i = 0; i < NB_VALUE_FOR_PID_INTEGRAL; ++i)
-          integral += this->_prevErreurs[i];
-        
-        this->_correction = his->_kp * this->_erreur + this->_kd * derive + this->_ki * integral;  
-        
-        this->seuilPid();
-        
-        this->addPrevErreur();
+          float derive;
+          float integral;
+          
+          this->_lastErreur = this->_erreur;
+  	  this->_erreur = this->_precedenteConsigne - distanceRealiseEnNormeConsigne;
+          
+          derive = consigne - _precedenteConsigne; // a voir si pas mieux this->_erreur - this->_lastErreur
+          
+          integral = 0.0;
+          for(int i = 0; i < NB_VALUE_FOR_PID_INTEGRAL; ++i)
+            integral += this->_prevErreurs[i];
+          
+          this->_correction = this->_kp * this->_erreur + this->_kd * derive + this->_ki * integral;  
+          
+          this->seuilPid();
+          
+          this->addPrevErreur();
 	}
 	
-	return consigne + this->_correction;
+        this->_precedenteConsigne = consigne;
+        
+        _commande = consigne + _correction;
+        
+	return _commande;
 }
 
-float PID::seuilPid()
+void PID::seuilPid()
 {
-    if ( this->_correction > 0)
+    if ( this->_correction >= 0)
     {
         this->_correction = min(this->_correction, this->_valMaxCorrection);
     }
     else
     {
-        this->_correction = max(this->_correction, this->_valMaxCorrection);
+        this->_correction = max(this->_correction, -1.0 * this->_valMaxCorrection);
     }
 }
 
@@ -73,6 +76,8 @@ void PID::reset()
 	this->_correction = 0.0;
     this->_lastErreur = 0.0;
     this->_index = 0;
+    
+    _precedenteConsigne = 0.0;
     
     for(int i = 0; i < NB_VALUE_FOR_PID_INTEGRAL; ++i)
         this->_prevErreurs[i] = 0;
