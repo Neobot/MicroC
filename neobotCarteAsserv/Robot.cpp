@@ -31,8 +31,11 @@ Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, f
     pasPrecendentGauche = 0.0;
     pasPrecendentDroit = 0.0;
 
-	_colorSensor[0] = colorSensor1;
-	_colorSensor[1] = colorSensor2;
+	_colorSensor[ColorSensor1] = colorSensor1;
+	_colorSensor[ColorSensor2] = colorSensor2;
+	
+	_colorSensorEnabled[ColorSensor1] = false;
+	_colorSensorEnabled[ColorSensor2] = false;
 }
 
 void Robot::teleport(Point point)
@@ -299,9 +302,9 @@ void Robot::stopAttente()
 
 void Robot::enableColorSensor(int sensorId)
 {
-	if (_colorSensorEnabled[sensorId] == 0)
+	if (sensorId >= 0 && sensorId < ColorSensorCount && _colorSensorEnabled[sensorId] == false)
 	{
-		_colorSensorEnabled[sensorId] = 1;
+		_colorSensorEnabled[sensorId] = true;
 		_colorSensorStatus[sensorId] = ColorUnknown;
 		_colorSensor[sensorId]->setInterrupt(false);
 	}
@@ -310,9 +313,9 @@ void Robot::enableColorSensor(int sensorId)
 
 void Robot::disableColorSensor(int sensorId)
 {
-	if (_colorSensorEnabled[sensorId] == 1)
+	if (sensorId >= 0 && sensorId < ColorSensorCount && _colorSensorEnabled[sensorId] == true)
 	{
-		_colorSensorEnabled[sensorId] = 0;
+		_colorSensorEnabled[sensorId] = false;
 		_colorSensorStatus[sensorId] = ColorUnknown;
 		_colorSensor[sensorId]->setInterrupt(true);
 	}
@@ -320,7 +323,7 @@ void Robot::disableColorSensor(int sensorId)
 
 bool Robot::isColorSensorEnabled(int sensorId)
 {
-	return _colorSensorEnabled[sensorId];
+	return sensorId >= 0 && sensorId < ColorSensorCount && _colorSensorEnabled[sensorId];
 }
 
 bool Robot::colorSensorValueHasChanged(int sensorId, ColorSensorState *color)

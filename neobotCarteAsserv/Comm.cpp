@@ -157,21 +157,6 @@ void Comm::sendSonars(int ag, int ad, int rg, int rd)
 
 	protocol.sendMessage(INSTR_SEND_SONARS, 4, data);
 }
-/*
-void Comm::sendColorSensors(int r1, int g1, int b1, int r2, int g2, int b2)
-{
-	uint8_t data[6];
-
-	data[0] = (uint8_t)(r1 >> 8);
-	data[1] = (uint8_t)(g1 >> 8);
-	data[2] = (uint8_t)(b1 >> 8);
-	data[3] = (uint8_t)(r2 >> 8);
-	data[4] = (uint8_t)(g2 >> 8);
-	data[5] = (uint8_t)(b2 >> 8);
-
-	protocol.sendMessage(INSTR_SEND_COLOR_SENSORS, 6, data);
-}
-*/
 
 void Comm::sendEvent(uint8_t event, uint8_t parameter)
 {
@@ -238,6 +223,19 @@ void Comm::sendLog(const String& text)
     text.toCharArray(data, len);
 
     protocol.sendMessage(INSTR_LOG, len, (uint8_t*)data);
+}
+
+void Comm::sendColorSensorsEvents()
+{
+	for (int sensorId = 0; sensorId < Robot::ColorSensorCount; ++sensorId)
+	{
+		if (robot->isColorSensorEnabled(sensorId))
+		{
+			ColorSensorState color;
+			if (robot->colorSensorValueHasChanged(sensorId, &color))
+				sendSensorEvent(ColorSensor, sensorId + 1, color); //in the comm sensors id starts at 1
+		}
+	}
 }
 
 bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
@@ -341,13 +339,11 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 		switch (sensorType)
 		{
 		case 2:
-			if (sensorNo <= 0)
-				for (int sensorId = 0; sensorId < 2; sensorId++)
+			if (sensorNo == 0)
+				for (int sensorId = 0; sensorId < Robot::ColorSensorCount; sensorId++)
 					robot->enableColorSensor(sensorId);
-			else if (sensorNo == 1)
-				robot->enableColorSensor(0);
-			else if (sensorNo == 2)
-				robot->enableColorSensor(1);
+			else
+				robot->disableColorSensor(sensorNo - 1); //in the comm sensors id starts at 1
 
 			break;
 		default:
@@ -364,13 +360,13 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 		switch (sensorType)
 		{
 		case 2:
-			if (sensorNo <= 0)
-				for (int sensorId = 0; sensorId < 2; sensorId++)
+			if (sensorNo == 0)
+			{
+				for (int sensorId = 0; sensorId < Robot::ColorSensorCount; sensorId++)
 					robot->disableColorSensor(sensorId);
-			else if (sensorNo == 1)
-				robot->disableColorSensor(0);
-			else if (sensorNo == 2)
-				robot->disableColorSensor(1);
+			}
+			else
+				robot->disableColorSensor(sensorNo - 1); //in the comm sensors id starts at 1
 
 			break;
 		default:

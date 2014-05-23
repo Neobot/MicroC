@@ -40,7 +40,7 @@ public:
   void sendParameterNames();
   void sendAR(uint8_t instruction, bool ok);
   void sendSonars(int ag, int ad, int rg, int rd);
-  //void sendColorSensors(int r1, int g1, int b1, int r2, int g2, int b2);
+  void sendColorSensorsEvents();
   void sendEvent(uint8_t event, uint8_t parameter = 0);
   void sendSensorEvent(uint8_t sensorType, uint8_t sensorNo, uint8_t sensorState);
   void sendPosition();
