@@ -424,7 +424,7 @@ void loop()
 
 	if (readColorSensors.ready())
 	{
-		batComm.sendColorSensorsEvents();
+		batCom.sendColorSensorsEvents();
 	}
 
     if (asservissement.ready())
