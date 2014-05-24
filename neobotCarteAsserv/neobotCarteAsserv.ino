@@ -257,7 +257,7 @@ void setup()
 	pinMode(PIN_MOTEUR_4, OUTPUT);
 
 	digitalWrite(PIN_MOTEUR_1, LOW);
-	digitalWrite(PIN_MOTEUR_2, HIGH);
+	digitalWrite(PIN_MOTEUR_2, LOW);
 	digitalWrite(PIN_MOTEUR_3, LOW);
 	digitalWrite(PIN_MOTEUR_4, LOW);
 
@@ -302,6 +302,11 @@ void setup()
     batCom.registerParameter(&batRobot._pidDist._kd, "PID Distance D");
     batCom.registerParameter(&batRobot._pidOrientation._kp, "PID Orientation P");
     batCom.registerParameter(&batRobot._pidOrientation._kd, "PID Orientation D");
+	batCom.registerParameter(&batRobot._consigneDist._accelerationMaxParcourt, "Acceleration lineaire");
+	batCom.registerParameter(&batRobot._consigneDist._vitessMax, "Vitesse lineaire");
+	batCom.registerParameter(&batRobot._consigneOrientation._accelerationMaxParcourt, "Acceleration rot");
+	batCom.registerParameter(&batRobot._consigneOrientation._vitessMax, "Vitesse rot");
+
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);

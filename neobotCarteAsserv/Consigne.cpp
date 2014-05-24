@@ -167,6 +167,14 @@ void Consigne::setAmaxParcourt(float amax)
 
 void Consigne::majDistAccDcc()
 {
+	/****
+	 *
+	 * Pour test avec modif depuis
+	 *
+	 */
+	this->majConsigneMax();
+	this->majVariationConsigneMax();
+
 	this->_distAcc = this->_vitessMaxParcourt * this->_vitessMaxParcourt / (2.0 * this->_accelerationMaxParcourt);
 
 	float nextVitessCourant = this->_vitessCourrante + this->_accelerationMaxParcourt * this->_periodeMajConsigne;
