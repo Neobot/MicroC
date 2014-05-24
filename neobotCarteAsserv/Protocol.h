@@ -1,7 +1,7 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
-#define MAX_LENGTH 20
+#define MAX_LENGTH 50
 #define SerialCOMM Serial
 
 class Protocol
