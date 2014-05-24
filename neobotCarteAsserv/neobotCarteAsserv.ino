@@ -44,7 +44,7 @@ Task commEcrit(PERIODE_COM_ECRITURE);
 Task readColorSensors(50);
 
 Adafruit_TCS34725 colorSensor1(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
-Adafruit_TCS34725 colorSensor2(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X); // ecrit wire1 mais non compilable
+Adafruit_TCS34725 colorSensor2(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X); // ecrit wire1 mais non compilable
 
 Robot batRobot(&colorSensor1, &colorSensor2, PERIODE_ASSERV_MS);
 Comm batCom(&batRobot);

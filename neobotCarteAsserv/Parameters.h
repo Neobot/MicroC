@@ -1,5 +1,5 @@
 #define COUNTDOWN
-//#define DEBUG_RECEIVED_COMM_INSTRUCTION
+#define DEBUG_RECEIVED_COMM_INSTRUCTION
 #define NO_JACK
 //#define SIMULATION						// simulates motors & robot movements
 #define NO_TPS_MATCH

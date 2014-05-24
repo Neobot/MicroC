@@ -242,7 +242,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 {
     bool ok = false;
 
-    if (instruction == INSTR_DEST_ADD && length == 10)
+	if (instruction == INSTR_DEST_ADD && length == 10)
     {
         //add a point
         Point p;
@@ -250,8 +250,8 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
         uint8_t typeAsserv;
         uint8_t typeDeplacement;
         uint8_t speed;
+		uint8_t pointArret;
 
-        p.pointArret = data[9] == 1;
 
         data = readInt16(data, x);
         data = readInt16(data, y);
@@ -259,6 +259,9 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
         data = readUInt8(data, typeAsserv);
         data = readUInt8(data, typeDeplacement);
         data = readUInt8(data, speed);
+		data = readUInt8(data, pointArret);
+
+		p.pointArret = pointArret == 1;
 
         p.x = x;
         p.y = y;
@@ -329,7 +332,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
             _logger->println(p.theta);
         }
     }
-	else if (instruction == INSTR_ENABLE_SENSOR && length == 3)
+	else if (instruction == INSTR_ENABLE_SENSOR && length == 2)
 	{
 		uint8_t sensorType;
 		uint8_t sensorNo;
@@ -350,7 +353,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 			break;
 		}
 	}
-	else if (instruction == INSTR_DISABLE_SENSOR && length == 3)
+	else if (instruction == INSTR_DISABLE_SENSOR && length == 2)
 	{
 		uint8_t sensorType;
 		uint8_t sensorNo;
@@ -373,12 +376,20 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 			break;
 		}
 	}
-	else if (instruction == INSTR_ACTION && length == 3)
+	else if (instruction == INSTR_ACTION && length == 2)
     {
         uint8_t actionType;
         uint8_t parameter;
         data = readUInt8(data, actionType);
 		data = readUInt8(data, parameter);
+
+		if (_logger)
+		{
+			_logger->print("Received action, type:");
+			_logger->print(actionType);
+			_logger->print(", parameter: ");
+			_logger->println(parameter);
+		}
 
 		switch (actionType)
         {
@@ -434,6 +445,10 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
         robot->_pingReceived = true;
         ok = true;
     }
+	else if (_logger)
+	{
+		_logger->println("Error: Incorrect instruction received");
+	}
 
     return ok;
 }
