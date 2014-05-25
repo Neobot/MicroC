@@ -280,7 +280,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
         if (_logger)
         {
-            _logger->print("AddPos received : ");
+			_logger->print("AddPos received: ");
             _logger->print(x);
             _logger->print(", ");
             _logger->print(y);
@@ -324,7 +324,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
         if (_logger)
         {
-            _logger->print("SetPos received : ");
+			_logger->print("SetPos received: ");
             _logger->print(x);
             _logger->print(", ");
             _logger->print(y);
@@ -352,6 +352,14 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 		default:
 			break;
 		}
+
+		if (_logger)
+		{
+			_logger->print("Enable sensor received: sensorType=");
+			_logger->print(sensorType);
+			_logger->print(", sensorNo=");
+			_logger->println(sensorNo);
+		}
 	}
 	else if (instruction == INSTR_DISABLE_SENSOR && length == 2)
 	{
@@ -375,6 +383,14 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 		default:
 			break;
 		}
+
+		if (_logger)
+		{
+			_logger->print("Disabled sensor received: sensorType=");
+			_logger->print(sensorType);
+			_logger->print(", sensorNo=");
+			_logger->println(sensorNo);
+		}
 	}
 	else if (instruction == INSTR_ACTION && length == 2)
     {
@@ -385,9 +401,9 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
 		if (_logger)
 		{
-			_logger->print("Received action, type:");
+			_logger->print("Received action: type=");
 			_logger->print(actionType);
-			_logger->print(", parameter: ");
+			_logger->print(", parameter=");
 			_logger->println(parameter);
 		}
 
@@ -405,7 +421,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     {
         if (_logger)
         {
-            _logger->println("Set parameters");
+			_logger->println("Set parameters received");
         }
 
         uint8_t nbParameters = 0;
@@ -428,7 +444,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     {
         if (_logger)
         {
-            _logger->println("Ask parameters");
+			_logger->println("Ask parameters received");
         }
 
         sendParameters();
@@ -439,7 +455,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
     {
         if (_logger)
         {
-            _logger->println("PING");
+			_logger->println("Ping received");
         }
 
         robot->_pingReceived = true;
@@ -480,3 +496,4 @@ void Comm::registerParameter(int* value, const String& name)
     _parameters[_nbRegisteredParameters] =  Parameter(value, name);
 	++_nbRegisteredParameters;
 }
+

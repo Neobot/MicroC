@@ -14,19 +14,18 @@ Consigne::Consigne(float vmax, float amax, float periodeConsigne, float dccCoeff
 	
 	this->_consigne = 0.0;
 	this->_consignePrec = 0.0;
-	this->_distRealise = 0.0;
 	this->_distDemande = 0.0;
     
     _sens = 0.0;
 	_dccCoeff = dccCoeff;
 	
 	this->_phase = Arrive;
+	this->_phasePrec = Arrive;
 }
 
 float Consigne::calculConsigne(float deltaDistRealise)
 {
 	this->_consignePrec = this->_consigne;
-	this->_distRealise += deltaDistRealise;
 
 	//float newVitesseCourante = _vitessCourrante + fabs(deltaDistRealise) / this->_periodeMajConsigne;
 	//newVitesseCourante /= 2;
@@ -41,15 +40,10 @@ float Consigne::calculConsigne(float deltaDistRealise)
 	}
 
 	this->majDistAccDcc();
-
-
-	bool accelPrec = _acceleration;
-	_acceleration = true;
-
     
     /*
      *
-     *  Détermination de la phase : accélération, stationnaire ou freinage
+     *  DÃˆtermination de la phase : accÃˆlÃˆration, stationnaire ou freinage
      *
      */
 
@@ -58,34 +52,32 @@ float Consigne::calculConsigne(float deltaDistRealise)
 		this->_phase = Arrive;
 	}
 	else if ( // si on est dans la zone de freinage ou si on est trop loin => on freine
-                    this->doitFreiner == true 
-                && 
-                (
-                        fabs(this->_distDemande - this->_distRealise) <= this->_distDcc
-                    ||
-                            fabs(this->_distDemande) < fabs(this->_distRealise)  
-                        &&
-                            fabs(this->_distDemande) * this->_distRealise == fabs(this->_distRealise) * this->_distDemande
-                )
-            )
+				this->doitFreiner == true
+			&&
+				fabs(this->_distDemande) <= this->_distDcc
+		)
 	{
-		_phase = Transitoire;
-		_acceleration = false;
+		_phase = Transitoire_dcc;
 	}
 	else if ( // sinon on tente d'accelerer
-                fabs(_distRealise) <= _distAcc || this->_vitessCourrante < this->_vitessMaxParcourt
+				this->_vitessCourrante < this->_vitessMaxParcourt
             )
 	{
-		if (_phase == Transitoire && !accelPrec)
+	/*	if (_phase == Transitoire_dcc)
 		{
 			_phase = Stationaire;
 		}
 		else
-		{
-			_phase = Transitoire;
-		}
+		{*/
+			_phase = Transitoire_acc;
+		//}
+	}
+	else
+	{
+		_phase = Stationaire;
 	}
 
+	_phasePrec = _phase;
 
     /*
      *
@@ -101,31 +93,25 @@ float Consigne::calculConsigne(float deltaDistRealise)
 	{
 		this->_consigne = this->_consignePrec;
 	}
-	else if (this->_phase == Transitoire)
+	else if (this->_phase == Transitoire_acc)
 	{
-
-		// acceleration ou freinage
-		if (_acceleration)
-		{
-			this->_consigne = this->_consignePrec + _sens * this->_variationConsigneMax;
-		}
-		else
-		{
-			this->_consigne = this->_consignePrec - _sens * this->_variationConsigneMax;
-		}
-
-		// limitation consigne max
-		if (fabs(this->_consigne) > fabs(this->_consigneMax))
-		{
-			int sensConsigne = this->_consigne > 0 ? 1 : -1;
-			this->_consigne = sensConsigne * this->_consigneMax;
-			this->_phase = Stationaire;
-		}
-
+		this->_consigne = this->_consignePrec + _sens * this->_variationConsigneMax;
+	}
+	else if (this->_phase == Transitoire_dcc)
+	{
+		this->_consigne = this->_consignePrec - _sens * this->_variationConsigneMax;
 	}
 	else
 	{
 		this->_consigne = 0.0;
+	}
+
+	// limitation consigne max
+	if (fabs(this->_consigne) > fabs(this->_consigneMax))
+	{
+		int sensConsigne = this->_consigne > 0 ? 1 : -1;
+		this->_consigne = sensConsigne * this->_consigneMax;
+		this->_phase = Stationaire;
 	}
 
 	return this->_consigne;
@@ -134,7 +120,6 @@ float Consigne::calculConsigne(float deltaDistRealise)
 void Consigne::setDemande(float dist, bool freinage)
 {
 	_vitessCourrante = 0.0;
-	this->_distRealise = 0.0;
 	this->_distDemande = dist;
 	this->_phase = Stationaire;
 	this->doitFreiner = freinage;
@@ -148,7 +133,8 @@ void Consigne::setDemande(float dist, bool freinage)
         this->_distArrive = DIST_ARRIVE_SANS_FREINAGE;
     }
     
-    _sens = dist != 0.0 ? fabs(dist) / dist : 0.0;
+	if (_phasePrec != Transitoire_dcc)
+		_sens = dist != 0.0 ? fabs(dist) / dist : 0.0;
 }
 
 void Consigne::setVmaxParcourt(float vmax)
@@ -164,7 +150,6 @@ void Consigne::setAmaxParcourt(float amax)
 	this->majVariationConsigneMax();
 }
 
-
 void Consigne::majDistAccDcc()
 {
 	/****
@@ -174,8 +159,6 @@ void Consigne::majDistAccDcc()
 	 */
 	this->majConsigneMax();
 	this->majVariationConsigneMax();
-
-	this->_distAcc = this->_vitessMaxParcourt * this->_vitessMaxParcourt / (2.0 * this->_accelerationMaxParcourt);
 
 	float nextVitessCourant = this->_vitessCourrante + this->_accelerationMaxParcourt * this->_periodeMajConsigne;
 
@@ -221,6 +204,7 @@ bool Consigne::estArrive()
 
 bool Consigne::calcEstArrive()
 {
-	return fabs(this->_distDemande - this->_distRealise) <= this->_distArrive;
+	return fabs(this->_distDemande) <= this->_distArrive;
 }
+
 

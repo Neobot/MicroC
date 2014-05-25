@@ -27,3 +27,4 @@ class Protocol
 };
 
 #endif // PROTOCOL_H
+

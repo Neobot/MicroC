@@ -12,6 +12,7 @@ Simulation::Simulation(int intervalMs, float mmPerStep, int maxPwm, float maxSpe
 
 	_currentSpeed = 0;
 	_currentSteps = 0;
+	_pwm = _neutralPwm;
 }
 
 void Simulation::setCommande(int pwm)
@@ -23,7 +24,7 @@ int Simulation::getSteps()
 {
 	float targetSpeed;
 
-	targetSpeed = (_pwm - _neutralPwm) / _neutralPwm * _maxSpeed;
+	targetSpeed = - (_pwm - _neutralPwm) / _neutralPwm * _maxSpeed;
 
 	// limit the acceleration
 	if (targetSpeed > _currentSpeed + _maxAccelPerInterval)
@@ -38,3 +39,4 @@ int Simulation::getSteps()
 
 	return _currentSteps;
 }
+

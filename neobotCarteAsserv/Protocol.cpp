@@ -132,3 +132,4 @@ uint8_t Protocol::getLength()
 {
 	return _currentLength - 1;
 }
+

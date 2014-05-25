@@ -94,3 +94,4 @@ void Logger::println(double value)
 			SerialDEBUG.println(value);
 		};
 }
+

@@ -26,7 +26,7 @@ const float DIST_ARRIVE_SANS_FREINAGE = 5.0;
 class Consigne
 {
     public:
-	  Consigne(float vmax, float amax, float periodeConsigne, float dccCoeff, float distArrive = DIST_ARRIVE_AVEC_FREINAGE); // 5 mm d'arrivée
+	  Consigne(float vmax, float amax, float periodeConsigne, float dccCoeff, float distArrive = DIST_ARRIVE_AVEC_FREINAGE); // 5 mm d'arriv√©e
 		
       float calculConsigne(float deltaDistRealise);
       void setDemande(float dist, bool freinage = true);
@@ -43,7 +43,7 @@ class Consigne
       
       float _distArrive;
       
-      enum Phase{Transitoire = 0, Stationaire = 1, Arrive = 2};
+	  enum Phase{Transitoire_acc = 0, Stationaire = 1, Arrive = 2, Transitoire_dcc = 4};
       
       float _vitessMax;
       float _vitessMaxParcourt;
@@ -52,9 +52,7 @@ class Consigne
       float _periodeMajConsigne;
       
       float _consignePrec;
-      
-      float _distRealise;
-      
+
       float _distDemande;
       
       float _sens;
@@ -67,10 +65,11 @@ class Consigne
       float _variationConsigneMax;
           
       Phase _phase;
-      bool _acceleration;
+	  Phase _phasePrec;
       
       float _dccCoeff;
 };
 
 #endif // CONSIGNE_H
+
 

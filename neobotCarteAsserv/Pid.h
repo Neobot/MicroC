@@ -17,16 +17,17 @@ public:
     };
 
     float _kp; // gain proportionnel
-    float _kd; // gain deriv�
+    float _kd; // gain derivÔøΩ
     float _ki; //gain integrale
     
     float _correction; // la correction a ajouter
     float _precedenteConsigne;
+	float _precedentePrecedenteConsigne;
     float _commande;
     
     float _erreur; // erreur courante
     float _lastErreur; // precedente erreur
-    float _prevErreurs[NB_VALUE_FOR_PID_INTEGRAL]; // tableau des erreurs pr�cedentes pour le gain integrale
+    float _prevErreurs[NB_VALUE_FOR_PID_INTEGRAL]; // tableau des erreurs prÔøΩcedentes pour le gain integrale
     int _index; // index courant du tableau
     
     float _valMaxCorrection;
@@ -44,4 +45,5 @@ public:
 };
 
 #endif // PID_H
+
 

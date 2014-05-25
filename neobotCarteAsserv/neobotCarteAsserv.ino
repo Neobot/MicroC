@@ -42,6 +42,7 @@ Task asservissement(PERIODE_ASSERV_MS);
 Task commLect(PERIODE_COM_LECTURE);
 Task commEcrit(PERIODE_COM_ECRITURE);
 Task readColorSensors(50);
+Task debugEnvoie(5);
 
 Adafruit_TCS34725 colorSensor1(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
 Adafruit_TCS34725 colorSensor2(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X); // ecrit wire1 mais non compilable
@@ -104,24 +105,49 @@ unsigned int readEncoder(bool wheel, bool encoder, bool spd)
 void MAJPosition()
 {
     int dg, dd;
+	int speedL, speedR, speedMotL, speedMotR;
 
 #ifndef SIMULATION
     dg = readEncoder(0, 0, 0) - initEncodeurG;
     dd = readEncoder(1, 0, 0) - initEncodeurD;
+
+	// read encoders speed (in mm/s)
+	speedL = readEncoder(0, 0, 1) - 8388608;
+	speedR = readEncoder(1, 0, 1) - 8388608;
+	speedMotL = readEncoder(0, 1, 1) - 8388608;
+	speedMotR = readEncoder(1, 1, 1) - 8388608;
 #else
     dg = simMotorL.getSteps();
     dd = simMotorR.getSteps();
+	speedL = dg;
+	speedR = dd;
+	speedMotL = dg;
+	speedMotR = dd;
 #endif
 
 #ifdef DEBUG_ENCODER
     batLogger.print("dg=");
     batLogger.print(dg);
-    batLogger.print(" dd=");
+	batLogger.print(" dd=");
     batLogger.print(dd);
     batLogger.println(" ");
 #endif
 
+#ifdef DEBUG_SPEED
+	batLogger.print("speedL=");
+	batLogger.print(speedL);
+	batLogger.print(" speedMotL=");
+	batLogger.print(speedMotL);
+	batLogger.print(" speedR=");
+	batLogger.print(speedR);
+	batLogger.print(" speedMotR=");
+	batLogger.println(speedMotR);
+#endif
+
     batRobot.majPosition((float) dg, (float) dd);
+
+	if (batRobot.checkBlocked(speedL, speedMotL, speedR, speedMotR))
+		batCom.sendEvent(EVENT_IS_BLOCKED);
 }
 
 void envoiConsigne()
@@ -296,6 +322,8 @@ void setup()
     batCom.setLogger(&batLogger);
 #endif
 
+	batRobot.setLogger(&batLogger);
+
     //register parameters which can be changed trhough the comm
     //Max number of parameters is currently 10, defined in com.h
     batCom.registerParameter(&batRobot._pidDist._kp, "PID Distance P");
@@ -318,7 +346,7 @@ void setup()
     //servoArD.detach();
 
 	//batRobot.ajoutPoint(200, -50, false);
-    //batRobot.ajoutPoint(300, 0, true);
+	batRobot.ajoutPoint(300, 0, true);
     //batRobot.ajoutPoint(400, 0, false);
     //batRobot.ajoutPoint(600, -50, false);
     //batRobot.ajoutPoint(800, -0, false);
@@ -448,76 +476,92 @@ void loop()
         }
 #endif
 
-#ifdef DEBUG_CONSIGNE_LIN
-        //if (!batRobot._consigneDist.estArrive())
-        {
-            batLogger.print("D: Consigne:");
-            batLogger.print(batRobot._consigneDist._consigne);
-            batLogger.print(" dr:");
-            batLogger.print(batRobot._consigneDist._distDemande - batRobot._consigneDist._distRealise);
-            batLogger.print(" Dcc:");
-            batLogger.print(batRobot._consigneDist._distDcc);
-            batLogger.print(" Vc:");
-            batLogger.print(batRobot._consigneDist._vitessCourrante);
-            if (batRobot._consigneDist.estArrive())
-                batLogger.print(" ARRIVE");
-            batLogger.println(" ");
-        }
-#endif
 
-#ifdef DEBUG_CONSIGNE_ROT
-        //if (!batRobot._consigneOrientation.estArrive())
-        {
-            batLogger.print("R: Consigne:");
-            batLogger.print(batRobot._consigneOrientation._consigne);
-            batLogger.print(" dr:");
-            batLogger.print(batRobot._consigneOrientation._distDemande - batRobot._consigneOrientation._distRealise);
-            batLogger.print(" Dcc:");
-            batLogger.print(batRobot._consigneOrientation._distDcc);
-            batLogger.print(" Vc:");
-            batLogger.print(batRobot._consigneOrientation._vitessCourrante);
-            if (batRobot._consigneOrientation.estArrive())
-                batLogger.print(" ARRIVE");
-            batLogger.println(" ");
-        }
-#endif
+		if(debugEnvoie.ready())
+		{
+			#ifdef DEBUG_CONSIGNE_LIN
+					//if (!batRobot._consigneDist.estArrive())
+					{
+						batLogger.print("D: Consigne:");
+						batLogger.print(batRobot._consigneDist._consigne);
+						batLogger.print(" dr:");
+						batLogger.print(batRobot._consigneDist._distDemande - batRobot._consigneDist._distRealise);
+						batLogger.print(" Dcc:");
+						batLogger.print(batRobot._consigneDist._distDcc);
+						batLogger.print(" Vc:");
+						batLogger.print(batRobot._consigneDist._vitessCourrante);
+						if (batRobot._consigneDist.estArrive())
+							batLogger.print(" ARRIVE");
+						batLogger.println(" ");
+					}
+			#endif
+
+			#ifdef DEBUG_CONSIGNE_ROT
+					//if (!batRobot._consigneOrientation.estArrive())
+					{
+						batLogger.print("R: Consigne:");
+						batLogger.print(batRobot._consigneOrientation._consigne);
+						batLogger.print(" dr:");
+						batLogger.print(batRobot._consigneOrientation._distDemande - batRobot._consigneOrientation._distRealise);
+						batLogger.print(" Dcc:");
+						batLogger.print(batRobot._consigneOrientation._distDcc);
+						batLogger.print(" Vc:");
+						batLogger.print(batRobot._consigneOrientation._vitessCourrante);
+						if (batRobot._consigneOrientation.estArrive())
+							batLogger.print(" ARRIVE");
+						batLogger.println(" ");
+					}
+			#endif
 
 
-#ifdef DEBUG_PID
+			#ifdef DEBUG_PID
+			if (!batRobot._consigneDist.estArrive())
+			{
+						batLogger.print("D D: ");
+						batLogger.print(batRobot._consigneDist._distDemande);
+						batLogger.print(" R: ");
+						batLogger.print(batRobot._consigneOrientation._distDemande);
+						batLogger.print("C D: ");
+						batLogger.print(batRobot._consigneDist._consigne);
+						batLogger.print(" R: ");
+						batLogger.print(batRobot._consigneOrientation._consigne);
+						batLogger.print(" ");
+						batLogger.print("P D: ");
+						batLogger.print(batRobot._consigneDist._phase);
+						batLogger.print(" R: ");
+						batLogger.print(batRobot._consigneOrientation._phase);
+						batLogger.print(" ");
+						batLogger.print(" PCr D: ");
+						batLogger.print(batRobot._pidDist._correction);
+						batLogger.print(" R: ");
+						batLogger.print(batRobot._pidOrientation._correction);
+						batLogger.print(" ");
+						batLogger.print(" PCo D:");
+						batLogger.print(batRobot._pidDist._commande);
+						batLogger.print(" R: ");
+						batLogger.print(batRobot._pidOrientation._commande);
+						batLogger.println(" ");
+			}
+			#endif
 
-            batLogger.print("Consigne D : ");
-            batLogger.print(batRobot._consigneDist._consigne);
-            batLogger.print(" R : ");
-            batLogger.print(batRobot._consigneOrientation._consigne);
-            batLogger.println(" ");
-            batLogger.print(" PID correction D : ");
-            batLogger.print(batRobot._pidDist._correction);
-            batLogger.print(" R: ");
-            batLogger.print(batRobot._pidOrientation._correction);
-            batLogger.println(" ");
-            batLogger.print(" PID commande D :");
-            batLogger.print(batRobot._pidDist._commande);
-            batLogger.print(" R : ");
-            batLogger.print(batRobot._pidOrientation._commande);
-            batLogger.println(" ");
-#endif
+			#ifdef DEBUG_POSITION
+					//if (batRobot._consigneDist.calcEstArrive() == false)
+					{
+						batLogger.print("xp=");
+						batLogger.print(batRobot.pointSuivant.x);
+						batLogger.print(" yp=");
+						batLogger.print(batRobot.pointSuivant.y);
+						batLogger.print(" x=");
+						batLogger.print(batRobot.position.x);
+						batLogger.print(" y=");
+						batLogger.print(batRobot.position.y);
+						batLogger.print(" t=");
+						batLogger.print(batRobot.position.theta);
+						batLogger.println(" ");
+					}
+			#endif
 
-#ifdef DEBUG_POSITION
-        //if (batRobot._consigneDist.calcEstArrive() == false)
-        {
-            batLogger.print("xp=");
-            batLogger.print(batRobot.pointSuivant.x);
-            batLogger.print(" yp=");
-            batLogger.print(batRobot.pointSuivant.y);
-            batLogger.print(" x=");
-            batLogger.print(batRobot.position.x);
-            batLogger.print(" y=");
-            batLogger.print(batRobot.position.y);
-            batLogger.print(" t=");
-            batLogger.print(batRobot.position.theta);
-            batLogger.println(" ");
-        }
-#endif
+		}
 
 #ifndef NO_TPS_MATCH
         if(millis() - tempsMatch >= TPS_MATCH)
@@ -561,3 +605,4 @@ void loop()
 #endif
     }	// asservissement.ready()
 }
+

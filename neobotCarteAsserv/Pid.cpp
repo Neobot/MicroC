@@ -36,21 +36,21 @@ float PID::calculCommande(float consigne, float distanceRealiseEnNormeConsigne)
           float integral;
           
           this->_lastErreur = this->_erreur;
-  	  this->_erreur = this->_precedenteConsigne - distanceRealiseEnNormeConsigne;
+		  this->_erreur = this->_precedenteConsigne - distanceRealiseEnNormeConsigne;
           
-          derive = consigne - _precedenteConsigne; // a voir si pas mieux this->_erreur - this->_lastErreur
-          
+		  derive = _precedenteConsigne - _precedentePrecedenteConsigne; // a voir si pas mieux this->_erreur - this->_lastErreur
+
           integral = 0.0;
           for(int i = 0; i < NB_VALUE_FOR_PID_INTEGRAL; ++i)
             integral += this->_prevErreurs[i];
           
-          this->_correction = this->_kp * this->_erreur + this->_kd * derive + this->_ki * integral;  
+		  this->_correction = this->_kp * this->_erreur + this->_kd * derive + this->_ki * integral;
           
-          this->seuilPid();
+		  this->seuilPid();
           
           this->addPrevErreur();
 	}
-	
+		_precedentePrecedenteConsigne = _precedenteConsigne;
         this->_precedenteConsigne = consigne;
         
         _commande = consigne + _correction;
@@ -78,6 +78,7 @@ void PID::reset()
     this->_index = 0;
     
     _precedenteConsigne = 0.0;
+	_precedentePrecedenteConsigne = 0.0;
     
     for(int i = 0; i < NB_VALUE_FOR_PID_INTEGRAL; ++i)
         this->_prevErreurs[i] = 0;
@@ -100,4 +101,5 @@ void PID::changeEtat(bool actif)
 	else
 		this->_etatCourant = Desactive;
 }
+
 

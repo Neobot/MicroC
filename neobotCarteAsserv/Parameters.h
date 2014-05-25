@@ -1,14 +1,16 @@
 #define COUNTDOWN
-//#define DEBUG_RECEIVED_COMM_INSTRUCTION
 #define NO_JACK
-//#define SIMULATION						// simulates motors & robot movements
+#define SIMULATION						// simulates motors & robot movements
 #define NO_TPS_MATCH
 
 #define ENABLE_DEBUG		true		// if false, disable all logging
-#define ENABLE_PC_COMM		true		// enable comm to PC and redirect debug messages to PC
-//#define DEBUG_ENCODER
-//#define DEBUG_POSITION
-//#define DEBUG_PID
+#define ENABLE_PC_COMM		false		// enable comm to PC and redirect debug messages to PC
+
+#define DEBUG_RECEIVED_COMM_INSTRUCTION
+#define DEBUG_ENCODER
+//#define DEBUG_SPEED
+#define DEBUG_POSITION
+#define DEBUG_PID
 //#define DEBUG_CONSIGNE_MOTEUR
 //#define DEBUG_CONSIGNE_LIN
 //#define DEBUG_CONSIGNE_ROT
@@ -30,7 +32,7 @@
 #define DIAMETRE_ROUE_MM 57.6 // en mm
 
 #define ACCELARATION_MAX_EN_REEL_ROT 0.004
-#define ACCELARATION_MAX_EN_REEL_LIN 0.004 // en mm/ms² ou pas : 0.003 * PERIODE_ASSERV_MS * PERIODE_ASSERV_MS * COEFF_CONVERTION_PAS_METRE // 1m/s² => 0.001 mm/ms² => 0.001*Te² mm mais comme on travaille en pas on multiplis pas le coeef de correction
+#define ACCELARATION_MAX_EN_REEL_LIN 0.004 // en mm/ms¬≤ ou pas : 0.003 * PERIODE_ASSERV_MS * PERIODE_ASSERV_MS * COEFF_CONVERTION_PAS_METRE // 1m/s¬≤ => 0.001 mm/ms¬≤ => 0.001*Te¬≤ mm mais comme on travaille en pas on multiplis pas le coeef de correction
 
 #define VITESSE_MAX_REEL 1.4
 #define VITESSE_MAX .5 * VITESSE_MAX_REEL // mm/ms
@@ -47,12 +49,12 @@
 #define COEFF_FREINAGE_ANG 1.0
 
 #define DIST_ARRIVE_DIST 5.0 // mm
-#define DIST_ARRIVE_ANG 0.4 * PI * ENTRAXE_MM / 360.0 // en degrée 0.1° ~ 0.35 mm
+#define DIST_ARRIVE_ANG 0.4 * PI * ENTRAXE_MM / 360.0 // en degr√©e 0.1¬∞ ~ 0.35 mm
 
 // PID
 #define ACTIVE_PID_DISTANCE true
-#define KP_DISTANCE 2.2  
-#define KD_DISTANCE 0.8 
+#define KP_DISTANCE 2.2
+#define KD_DISTANCE 0.4
 #define KI_DISTANCE 0.0 // ca fout la merde ;)
 
 #define ACTIVE_PID_ANGLE true
@@ -66,9 +68,10 @@
 #define COEFF_CONVERTION_PAS_RADIAN NB_PAS_TOUR / (2.0 * PI) // 651.898646 pas / rad, valeur en 2011 : 1912
 #define COEFF_CONVERTION_PAS_MM DIAMETRE_ROUE_MM / (2.0 * COEFF_CONVERTION_PAS_RADIAN) // 0.044178 mm / pas , valeur en 2011 : 5.62
 
-#define COEF_CORRECTION_ROUE_FOLLES 0.0 // plus la valeur est grande plus il part à gauche, valeur en 2011 : 0.0019
+#define COEF_CORRECTION_ROUE_FOLLES 0.0 // plus la valeur est grande plus il part √† gauche, valeur en 2011 : 0.0019
 
-#define COEF_CORRECTION_ROUE_FOLLE_DROITE 1.0 + COEF_CORRECTION_ROUE_FOLLES / 2.0  // coef de corrections des valeurs envoyées par les roues folles
-#define COEF_CORRECTION_ROUE_FOLLE_GAUCHE 1.0 - COEF_CORRECTION_ROUE_FOLLES / 2.0  // coef de corrections des valeurs envoyées par les roues folles
+#define COEF_CORRECTION_ROUE_FOLLE_DROITE 1.0 + COEF_CORRECTION_ROUE_FOLLES / 2.0  // coef de corrections des valeurs envoy√©es par les roues folles
+#define COEF_CORRECTION_ROUE_FOLLE_GAUCHE 1.0 - COEF_CORRECTION_ROUE_FOLLES / 2.0  // coef de corrections des valeurs envoy√©es par les roues folles
 
 #define CORFUGE 0.0
+

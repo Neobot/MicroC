@@ -1,11 +1,12 @@
 #include "Robot.h"
 #include "IOConfig.h"
+#include "Logger.h"
 
 Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, float periodAsserv, float x, float y, float theta) :
 	_pidDist(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE, KI_DISTANCE),
 	_pidOrientation(ACTIVE_PID_ANGLE, KP_ANGLE, KD_ANGLE, KI_ANGLE),
 	_consigneDist(VITESSE_MAX, ACCELARATION_MAX_EN_REEL_LIN, periodAsserv, COEFF_FREINAGE_DIST, DIST_ARRIVE_DIST),
-	_consigneOrientation(VITESSE_MAX_ROT, ACCELARATION_MAX_EN_REEL_ROT, periodAsserv, COEFF_FREINAGE_ANG, DIST_ARRIVE_ANG)
+	_consigneOrientation(VITESSE_MAX_ROT, ACCELARATION_MAX_EN_REEL_ROT, periodAsserv, COEFF_FREINAGE_ANG, DIST_ARRIVE_ANG), _logger(0)
 {
     _tourneFini = false;
     _pingReceived = false;
@@ -25,8 +26,8 @@ Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, f
     _deltaDistMm = 0.0;
     _deltaOrientRad = 0.0;
     _periodAsserv = periodAsserv;
-    _commandeRoueGauche = 0;
-    _commandeRoueDroite = 0;
+	_commandeRoueGauche = MAX_PWM_MOTORS / 2.0;
+	_commandeRoueDroite = MAX_PWM_MOTORS / 2.0;
 
     pasPrecendentGauche = 0.0;
     pasPrecendentDroit = 0.0;
@@ -36,6 +37,11 @@ Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, f
 	
 	_colorSensorEnabled[ColorSensor1] = false;
 	_colorSensorEnabled[ColorSensor2] = false;
+}
+
+void Robot::setLogger(Logger *logger)
+{
+	_logger = logger;
 }
 
 void Robot::teleport(Point point)
@@ -109,10 +115,31 @@ void Robot::majPosition(float pasRoueGauche, float pasRoueDroite)
     pasPrecendentDroit = pasRoueDroite;
 }
 
+bool Robot::checkBlocked(int speedL, int speedMotL, int speedR, int speedMotR)
+{
+	// speed are in mm/s
+	bool blocked = false;
+
+	if (speedL > 50 && speedMotL < 20)
+		blocked = true;
+
+	if (speedR > 50 && speedMotR < 20)
+		blocked = true;
+
+	return blocked;
+}
+
 
 void Robot::calculConsigne()
 {
     float thetaDemande = _deltaOrientRad * ENTRAXE_MM / 2.0;
+
+#ifdef DEBUG_PID
+	_logger->print("Delta dist: ");
+	_logger->print(_deltaDistMm);
+	_logger->print(", Theta demande: ");
+	_logger->println(thetaDemande);
+#endif
 
     if (_typeDeplacement == TourneEtAvance)
     {
@@ -151,18 +178,7 @@ void Robot::calculConsigne()
 
 void Robot::calculCommande()
 {
-    if (_typeAsserv == Aucun)
-    {
-        _pidDist.changeEtat(false);
-        _pidOrientation.changeEtat(false);
-    }
-    else
-    {
-        _pidDist.changeEtat(true);
-        _pidOrientation.changeEtat(true);
-    }
-
-    _pidDist.calculCommande(
+	_pidDist.calculCommande(
                 _consigneDist._consigne,
                 _consigneDist.transformeDeltaDistanceEnConsigne(_deltaDistMm)
                 );
@@ -170,9 +186,9 @@ void Robot::calculCommande()
                 _consigneOrientation._consigne,
                 _consigneOrientation.transformeDeltaDistanceEnConsigne(_deltaOrientRad * ENTRAXE_MM / 2.0)
                 );
-    
+
     // calcule des commandes moteurs
-    // -1 devant... ils doivent être cablé à l'envers...
+    // -1 devant... ils doivent √™tre cabl√© √† l'envers...
     _commandeRoueDroite = (int) filtreCommandeRoue(-1.0*(_pidDist._commande - _pidOrientation._commande));
     _commandeRoueGauche = (int) filtreCommandeRoue(-1.0*(_pidDist._commande + _pidOrientation._commande));
     
@@ -215,6 +231,13 @@ void Robot::vaEnXY(float x, float y, bool estPointArret, float vitessMax)
     float dy = y - position.y;
     float dTheta = atan2(dy,dx) - position.theta;
     float dist = sqrt(dx * dx + dy * dy);
+
+#ifdef DEBUG_PID
+	_logger->print("dTheta: ");
+	_logger->print(dTheta);
+	_logger->print(" dist: ");
+	_logger->println(dist);
+#endif
     
     switch (_typeAsserv)
     {
@@ -254,7 +277,7 @@ void Robot::vaVersPointSuivant()
     _typeDeplacement = (Robot::TypeDeplacement) pointSuivant.typeDeplacement;
     _typeAsserv = (Robot::TypeAsserv) pointSuivant.typeAsserv;
 
-    vaEnXY(pointSuivant.x, pointSuivant.y, pointSuivant.vitessMax * VITESSE_MAX);
+	vaEnXY(pointSuivant.x, pointSuivant.y, pointSuivant.pointArret, pointSuivant.vitessMax * VITESSE_MAX / 100);
 }
 
 bool Robot::estArrive()
@@ -264,10 +287,24 @@ bool Robot::estArrive()
 
 bool Robot::passageAuPointSuivant()
 {
-    if (estArrive() && !queue.isEmpty())
+	if (estArrive())
     {
         _tourneFini = false;
-        pointSuivant = queue.pop();
+		if (!queue.isEmpty())
+		{
+			pointSuivant = queue.pop();
+
+			if (pointSuivant.typeAsserv == Aucun)
+			{
+				_pidDist.changeEtat(false);
+				_pidOrientation.changeEtat(false);
+			}
+			else
+			{
+				_pidDist.changeEtat(true);
+				_pidOrientation.changeEtat(true);
+			}
+		}
         return true;
     }
 
@@ -334,9 +371,9 @@ bool Robot::colorSensorValueHasChanged(int sensorId, ColorSensorState *color)
 
 		_colorSensor[sensorId]->getColorInHSL(&h, &s, &l); // l = 0 -> white, l = 1 -> black
 
-		if ((h >= 330 || h <= 30) && s > 0.5 && l > 0.3 && l < 0.8)			// red: hue = 0°
+		if ((h >= 330 || h <= 30) && s > 0.5 && l > 0.3 && l < 0.8)			// red: hue = 0¬∞
 			*color = ColorRed;
-		else if (h >= 30 && h <= 90 && s > 0.5 && l > 0.3 && l < 0.8)	// yellow: hue = 60°
+		else if (h >= 30 && h <= 90 && s > 0.5 && l > 0.3 && l < 0.8)	// yellow: hue = 60¬∞
 			*color = ColorYellow;
 		else
 			*color = ColorUnknown;
@@ -388,3 +425,4 @@ void Robot::stopPump(int pumpId)
 		break;
 	}
 }
+

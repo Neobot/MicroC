@@ -27,6 +27,7 @@
  * Author : Neobot
  */
 
+class Logger;
 
 class Robot
 {
@@ -56,6 +57,8 @@ class Robot
 		ColorSensorCount
 	};
   
+	void setLogger(Logger* logger);
+
     void teleport(Point point);
     void forceObjectif(Point point);
     void ajoutPoint(Point point);
@@ -63,6 +66,7 @@ class Robot
     void flush();
     void stop();
     void majPosition(float pasRoueGauche, float pasRoueDroite);
+	bool checkBlocked(int speedL, int speedMotL, int speedR, int speedMotR);
     void calculConsigne();
     void calculCommande();
     float filtreCommandeRoue(float value);
@@ -104,7 +108,7 @@ class Robot
 	float _deltaDistMm;
 	float _deltaOrientRad;
       
-    float _thetaTotal; // angle non borné
+    float _thetaTotal; // angle non born√©
 
 	int _commandeRoueGauche;
 	int _commandeRoueDroite;
@@ -120,8 +124,9 @@ private:
 	bool _colorSensorEnabled[2];
 	ColorSensorState _colorSensorStatus[2];
 	Adafruit_TCS34725* _colorSensor[2];
-
+	Logger* _logger;
 };
 
 #endif // ROBOT_H
+
 

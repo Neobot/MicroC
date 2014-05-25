@@ -24,7 +24,7 @@ SOURCES += \
 SOURCES += \
 			neobotCarteAsserv/Comm.h \
 			neobotCarteAsserv/Consigne.h \
-            neobotCarteAsserv/id.h \
+			neobotCarteAsserv/Pid.h \
             neobotCarteAsserv/Point.h \
             neobotCarteAsserv/Protocol.h \
             neobotCarteAsserv/Robot.h \
