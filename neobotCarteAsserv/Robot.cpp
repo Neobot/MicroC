@@ -49,6 +49,8 @@ void Robot::teleport(Point point)
     position = point;
     flush();
     pointSuivant = position;
+	_pidDist.reset();
+	_pidOrientation.reset();
     
 }
 
@@ -164,8 +166,8 @@ void Robot::calculConsigne()
                 _tourneFini = true;
             }
             _consigneDist.calculConsigne(_deltaDistMm);
-            _consigneOrientation._consigne = 0.0;
-        }
+			_consigneOrientation.calculConsigne(thetaDemande);
+		}
     }
     else if (_typeDeplacement == TourneSeulement)
     {

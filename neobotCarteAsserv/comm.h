@@ -46,6 +46,7 @@ public:
   void sendPosition();
   void sendConsigne();
   void sendGo(bool isBlue);
+  void sendInit();
   void sendLog(const String& text);
   
   bool process_message(uint8_t data[], uint8_t instruction, uint8_t length);

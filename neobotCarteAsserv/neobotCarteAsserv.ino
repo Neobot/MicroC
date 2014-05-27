@@ -41,6 +41,7 @@
 Task asservissement(PERIODE_ASSERV_MS);
 Task commLect(PERIODE_COM_LECTURE);
 Task commEcrit(PERIODE_COM_ECRITURE);
+Task oneSecond(1000);
 Task readColorSensors(50);
 Task debugEnvoie(5);
 
@@ -208,9 +209,7 @@ void litEtEnvoieSonar()
     batLogger.println(" ");
 #endif
 
-#ifndef NO_PC_COMM
     batCom.sendSonars(ag, ad, rg, rd);
-#endif
 }
 
 void enableColorSensors(bool enable)
@@ -244,7 +243,7 @@ int readColor()
 {
     int color = digitalRead(PIN_INTERRUPTEUR_COULEUR);
     if (color == HIGH)
-		setLedRGB(255, 255, 0);    // jaune
+		setLedRGB(255, 128, 0);    // jaune
     else
         setLedRGB(255, 0, 0);  // rouge
 
@@ -346,7 +345,7 @@ void setup()
     //servoArD.detach();
 
 	//batRobot.ajoutPoint(200, -50, false);
-	//batRobot.ajoutPoint(300, 0, true);
+	batRobot.ajoutPoint(300, 0, true);
     //batRobot.ajoutPoint(400, 0, false);
     //batRobot.ajoutPoint(600, -50, false);
     //batRobot.ajoutPoint(800, -0, false);
@@ -370,7 +369,7 @@ void setup()
 
   }*/
 
-	delay(1000);
+	delay(2000);
 	batLogger.println("Restart arduino");
 
 #ifdef SIMULATION
@@ -385,9 +384,21 @@ void setup()
 	batLogger.println("Match timer disabled");
 #endif
 
-#ifndef NO_JACK
-    setLedRGB(0, 255, 0);	// vert
+	setLedRGB(0, 0, 255);	// bleu = waiting for PC
 
+#if ENABLE_PC_COMM == true
+// wait for PC to be ready
+	while (!batRobot._pingReceived)
+	{
+		if (commLect.ready())
+			batCom.comm_read();
+
+		if (oneSecond.ready())
+			batCom.sendInit();
+	}
+#endif
+
+#ifndef NO_JACK
 	bool jackPlugged = digitalRead(PIN_JACK) == LOW;
 
 	if (!jackPlugged)
@@ -403,7 +414,10 @@ void setup()
 	batLogger.println("Please unplug the jack");
     
     while(jackPlugged)
-        jackPlugged = digitalRead(PIN_JACK) == LOW;
+	{
+		bool estJaune = readColor();
+		jackPlugged = digitalRead(PIN_JACK) == LOW;
+	}
 #endif
 
 	bool estJaune = readColor();
@@ -429,9 +443,7 @@ void setup()
 
 	batLogger.println("Here we gooooo!");
 
-#ifndef NO_PC_COMM
-    batCom.sendGo(estJaune);
-#endif
+	batCom.sendGo(estJaune);
 }
 
 
@@ -442,23 +454,17 @@ void setup()
 
 void loop()
 {
-#ifndef NO_PC_COMM
     if (commLect.ready())
-    {
         batCom.comm_read();
-    }
 
     if (commEcrit.ready())
     {
         batCom.sendPosition();
 		litEtEnvoieSonar();
     }
-#endif
 
 	if (readColorSensors.ready())
-	{
 		batCom.sendColorSensorsEvents();
-	}
 
     if (asservissement.ready())
     {
@@ -468,14 +474,11 @@ void loop()
         batRobot.calculCommande();
         envoiConsigne();
 
-#ifndef NO_PC_COMM
         if(batRobot.passageAuPointSuivant())
         {
             batCom.sendConsigne();
 			batCom.sendEvent(EVENT_IS_ARRIVED);
         }
-#endif
-
 
 		if(debugEnvoie.ready())
 		{

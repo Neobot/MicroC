@@ -5,7 +5,7 @@
 #define NB_VALUE_FOR_PID_INTEGRAL 10
 
 // Pour sature le PID au cas ou ;)
-#define VALUE_MAX_PID 10000.0;
+#define VALUE_MAX_PID 30000.0;
 
 class PID
 {

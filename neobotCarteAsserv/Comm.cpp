@@ -216,6 +216,10 @@ void Comm::sendGo(bool isBlue)
     protocol.sendMessage(INSTR_GO, 1, data);
 }
 
+void Comm::sendInit()
+{
+	protocol.sendMessage(INSTR_INIT_DONE, 0, NULL);
+}
 void Comm::sendLog(const String& text)
 {
     int len = text.length() + 1;
@@ -461,9 +465,17 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
         robot->_pingReceived = true;
         ok = true;
     }
+	else if (instruction == INSTR_AR)
+	{
+		ok = true;
+	}
 	else if (_logger)
 	{
-		_logger->println("Error: Incorrect instruction received");
+		_logger->print("Error: Incorrect instruction received (instruction = ");
+		_logger->print(instruction);
+		_logger->print(", length = ");
+		_logger->print(length);
+		_logger->println(")");
 	}
 
     return ok;
@@ -474,7 +486,9 @@ void Comm::comm_read()
     if (protocol.read())
     {
         bool ok = process_message(protocol.getData(), protocol.getInstruction(), protocol.getLength());
-        sendAR(protocol.getInstruction(), ok);
+
+		if (protocol.getInstruction() == INSTR_PING)
+			sendAR(INSTR_PING, ok);
         comm_read();
     }
 }
