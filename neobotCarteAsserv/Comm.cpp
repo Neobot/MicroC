@@ -345,12 +345,12 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
 		switch (sensorType)
 		{
-		case 2:
+		case ColorSensor:
 			if (sensorNo == 0)
 				for (int sensorId = 0; sensorId < Robot::ColorSensorCount; sensorId++)
 					robot->enableColorSensor(sensorId);
 			else
-				robot->disableColorSensor(sensorNo - 1); //in the comm sensors id starts at 1
+				robot->enableColorSensor(sensorNo - 1); //in the comm sensors id starts at 1
 
 			break;
 		default:
