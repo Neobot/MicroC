@@ -30,7 +30,7 @@ float Consigne::calculConsigne(float deltaDistRealise)
 	//float newVitesseCourante = _vitessCourrante + fabs(deltaDistRealise) / this->_periodeMajConsigne;
 	//newVitesseCourante /= 2;
 
-	float newVitesseCourante = fabs(deltaDistRealise) / this->_periodeMajConsigne;
+	float newVitesseCourante = fabs(deltaDistRealise) / this->_periodeMajConsigne;	// mm / ms
 
 	if (newVitesseCourante <= _vitessMax)
 		_vitessCourrante = newVitesseCourante;
@@ -160,13 +160,14 @@ void Consigne::majDistAccDcc()
 	this->majConsigneMax();
 	this->majVariationConsigneMax();
 
-	float nextVitessCourant = this->_vitessCourrante + this->_accelerationMaxParcourt * this->_periodeMajConsigne;
+	float nextVitessCourant = this->_vitessCourrante;// + this->_accelerationMaxParcourt * this->_periodeMajConsigne;
 
 	if (nextVitessCourant > this->_vitessMaxParcourt)
 	{
 		nextVitessCourant = this->_vitessMaxParcourt;
 	}
 
+	// dist vcc en mm
 	this->_distDcc = _dccCoeff * (nextVitessCourant * nextVitessCourant) / (2.0 * this->_accelerationMaxParcourt);// + DIST_ARRIVE_AVEC_FREINAGE;
 }
 

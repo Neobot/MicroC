@@ -30,28 +30,28 @@ PID::PID(bool actif, float kp, float kd, float ki)
 float PID::calculCommande(float consigne, float distanceRealiseEnNormeConsigne)
 {
 	_correction = 0.0;
-	if (this->_etatCourant == Actif)
+	if (_etatCourant == Actif)
 	{
           float derive;
           float integral;
           
-          this->_lastErreur = this->_erreur;
-		  this->_erreur = this->_precedenteConsigne - distanceRealiseEnNormeConsigne;
+		  _lastErreur = _erreur;
+		  _erreur = _precedenteConsigne - distanceRealiseEnNormeConsigne;
           
-		  derive = _precedenteConsigne - _precedentePrecedenteConsigne; // a voir si pas mieux this->_erreur - this->_lastErreur
+		  derive = _erreur - _lastErreur; // a voir si pas mieux this->_erreur - this->_lastErreur
 
           integral = 0.0;
           for(int i = 0; i < NB_VALUE_FOR_PID_INTEGRAL; ++i)
-            integral += this->_prevErreurs[i];
+			integral += _prevErreurs[i];
           
-		  this->_correction = this->_kp * this->_erreur + this->_kd * derive + this->_ki * integral;
+		  _correction = _kp * _erreur + _kd * derive + _ki * integral;
           
-		  this->seuilPid();
+		  //seuilPid();
           
-          this->addPrevErreur();
+		  addPrevErreur();
 	}
 		_precedentePrecedenteConsigne = _precedenteConsigne;
-        this->_precedenteConsigne = consigne;
+		_precedenteConsigne = consigne;
         
         _commande = consigne + _correction;
         

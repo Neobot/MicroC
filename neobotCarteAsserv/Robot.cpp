@@ -139,6 +139,10 @@ void Robot::calculConsigne()
 	_logger->print(_deltaDistMm);
 	_logger->print(", Theta demande: ");
 	_logger->println(thetaDemande);
+	_logger->print("vitesse courante: ");
+	_logger->print(_consigneDist._vitessCourrante);
+	_logger->print(" acc max parcours: ");
+	_logger->println(_consigneDist._accelerationMaxParcourt);
 #endif
 
     if (_typeDeplacement == TourneEtAvance)
@@ -191,7 +195,7 @@ void Robot::calculCommande()
     // -1 devant... ils doivent √™tre cabl√© √† l'envers...
     _commandeRoueDroite = (int) filtreCommandeRoue(-1.0*(_pidDist._commande - _pidOrientation._commande));
     _commandeRoueGauche = (int) filtreCommandeRoue(-1.0*(_pidDist._commande + _pidOrientation._commande));
-    
+	//_logger->print("*** "); _logger->println(_consigneDist.transformeDeltaDistanceEnConsigne(_deltaDistMm));
 }
 
 float Robot::filtreCommandeRoue(float value)

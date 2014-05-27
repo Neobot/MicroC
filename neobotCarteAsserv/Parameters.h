@@ -1,16 +1,16 @@
 #define COUNTDOWN
 #define NO_JACK
-#define SIMULATION						// simulates motors & robot movements
+//#define SIMULATION						// simulates motors & robot movements
 #define NO_TPS_MATCH
 
 #define ENABLE_DEBUG		true		// if false, disable all logging
-#define ENABLE_PC_COMM		false		// enable comm to PC and redirect debug messages to PC
+#define ENABLE_PC_COMM		true		// enable comm to PC and redirect debug messages to PC
 
 #define DEBUG_RECEIVED_COMM_INSTRUCTION
-#define DEBUG_ENCODER
+//#define DEBUG_ENCODER
 //#define DEBUG_SPEED
-#define DEBUG_POSITION
-#define DEBUG_PID
+//#define DEBUG_POSITION
+//#define DEBUG_PID
 //#define DEBUG_CONSIGNE_MOTEUR
 //#define DEBUG_CONSIGNE_LIN
 //#define DEBUG_CONSIGNE_ROT

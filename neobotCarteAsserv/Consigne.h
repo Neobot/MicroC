@@ -19,7 +19,7 @@
  * Author : Neobot
  */
 
-const float COMMANDE_MOTEUR_MAX = 65535.0;
+const float COMMANDE_MOTEUR_MAX = 32767.0;
 const float DIST_ARRIVE_AVEC_FREINAGE = 5.0;
 const float DIST_ARRIVE_SANS_FREINAGE = 5.0;
 

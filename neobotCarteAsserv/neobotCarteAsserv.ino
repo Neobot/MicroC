@@ -346,7 +346,7 @@ void setup()
     //servoArD.detach();
 
 	//batRobot.ajoutPoint(200, -50, false);
-	batRobot.ajoutPoint(300, 0, true);
+	//batRobot.ajoutPoint(300, 0, true);
     //batRobot.ajoutPoint(400, 0, false);
     //batRobot.ajoutPoint(600, -50, false);
     //batRobot.ajoutPoint(800, -0, false);
