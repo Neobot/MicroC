@@ -36,6 +36,7 @@ class Consigne
       void majConsigneMax();
       void majVariationConsigneMax();
       float transformeDeltaDistanceEnConsigne(float delta);
+      float transformeConsigneEnVitesse(float consigne);
       bool estArrive();
       bool calcEstArrive();
       
