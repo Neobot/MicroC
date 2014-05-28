@@ -333,7 +333,8 @@ void setup()
 	batCom.registerParameter(&batRobot._consigneDist._vitessMax, "Vitesse lineaire");
 	batCom.registerParameter(&batRobot._consigneOrientation._accelerationMaxParcourt, "Acceleration rot");
 	batCom.registerParameter(&batRobot._consigneOrientation._vitessMax, "Vitesse rot");
-
+	batCom.registerParameter(&batRobot._consigneDist._dccCoeff, "coeff freinage dist");
+	batCom.registerParameter(&batRobot._consigneOrientation._dccCoeff, "coeff freinage rot");
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
@@ -345,7 +346,7 @@ void setup()
     //servoArD.detach();
 
 	//batRobot.ajoutPoint(200, -50, false);
-	batRobot.ajoutPoint(300, 0, true);
+	//batRobot.ajoutPoint(300, 0, true);
     //batRobot.ajoutPoint(400, 0, false);
     //batRobot.ajoutPoint(600, -50, false);
     //batRobot.ajoutPoint(800, -0, false);
