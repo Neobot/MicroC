@@ -175,6 +175,8 @@ void Comm::sendSensorEvent(uint8_t sensorType, uint8_t sensorNo, uint8_t sensorS
 	dataPtr = writeInt8(dataPtr, sensorType);
 	dataPtr = writeInt8(dataPtr, sensorNo);
 	dataPtr = writeInt8(dataPtr, sensorState);
+
+	protocol.sendMessage(INSTR_SENSOR_EVENT, 3, data);
 }
 
 void Comm::sendPosition()

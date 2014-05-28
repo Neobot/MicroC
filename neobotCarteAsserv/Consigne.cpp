@@ -18,6 +18,7 @@ Consigne::Consigne(float vmax, float amax, float periodeConsigne, float dccCoeff
     
     _sens = 0.0;
 	_dccCoeff = dccCoeff;
+	_dccAugmetationDcc = COEFF_AUGMENTATION_FREINAGE;
 	
 	this->_phase = Arrive;
 	this->_phasePrec = Arrive;
@@ -90,7 +91,7 @@ float Consigne::calculConsigne(float deltaDistRealise)
 	}
 	else if (this->_phase == Transitoire_dcc)
 	{
-		this->_consigne = this->_consignePrec - _sens * this->_variationConsigneMax;
+		this->_consigne = this->_consignePrec - _dccAugmetationDcc * _sens * this->_variationConsigneMax;
 	}
 	else
 	{

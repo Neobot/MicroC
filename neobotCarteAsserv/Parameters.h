@@ -15,6 +15,7 @@
 //#define DEBUG_CONSIGNE_LIN
 //#define DEBUG_CONSIGNE_ROT
 //#define DEBUG_ULTRASON
+//#define DEBUG_COLOR_SENSORS
 
 #define MAX_PWM 4095.0
 
@@ -45,8 +46,9 @@
 
 // Consigne
 
-#define COEFF_FREINAGE_DIST 3.0
-#define COEFF_FREINAGE_ANG 3.0
+#define COEFF_FREINAGE_DIST 1.2
+#define COEFF_FREINAGE_ANG 1.2
+#define COEFF_AUGMENTATION_FREINAGE 4
 
 #define DIST_ARRIVE_DIST 10.0 // mm
 #define DIST_ARRIVE_ANG 1 * PI * ENTRAXE_MM / 360.0 // en degr√©e 0.1¬∞ ~ 0.35 mm

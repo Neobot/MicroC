@@ -34,9 +34,7 @@ Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, f
 
 	_colorSensor[ColorSensor1] = colorSensor1;
 	_colorSensor[ColorSensor2] = colorSensor2;
-	
-	_colorSensorEnabled[ColorSensor1] = false;
-	_colorSensorEnabled[ColorSensor2] = false;
+
 }
 
 void Robot::setLogger(Logger *logger)
@@ -345,7 +343,7 @@ void Robot::stopAttente()
 
 void Robot::enableColorSensor(int sensorId)
 {
-	if (sensorId >= 0 && sensorId < ColorSensorCount && _colorSensorEnabled[sensorId] == false)
+	if (sensorId >= 0 && sensorId < ColorSensorCount)
 	{
 		_colorSensorEnabled[sensorId] = true;
 		_colorSensorStatus[sensorId] = ColorUnknown;
@@ -355,7 +353,7 @@ void Robot::enableColorSensor(int sensorId)
 
 void Robot::disableColorSensor(int sensorId)
 {
-	if (sensorId >= 0 && sensorId < ColorSensorCount && _colorSensorEnabled[sensorId] == true)
+	if (sensorId >= 0 && sensorId < ColorSensorCount)
 	{
 		_colorSensorEnabled[sensorId] = false;
 		_colorSensorStatus[sensorId] = ColorUnknown;
@@ -376,12 +374,23 @@ bool Robot::colorSensorValueHasChanged(int sensorId, ColorSensorState *color)
 
 		_colorSensor[sensorId]->getColorInHSL(&h, &s, &l); // l = 0 -> white, l = 1 -> black
 
-		if ((h >= 330 || h <= 30) && s > 0.5 && l > 0.3 && l < 0.8)			// red: hue = 0¬∞
+		if ((h >= 330 || h <= 30) && s > 0.3 && l > 0.3 && l < 0.8)			// red: hue = 0¬∞
 			*color = ColorRed;
-		else if (h >= 30 && h <= 90 && s > 0.5 && l > 0.3 && l < 0.8)	// yellow: hue = 60¬∞
+		else if (h >= 30 && h <= 90 && s > 0.3 && l > 0.3 && l < 0.8)	// yellow: hue = 60¬∞
 			*color = ColorYellow;
 		else
 			*color = ColorBlack;
+
+#ifdef DEBUG_COLOR_SENSORS
+		_logger->print("Color sensor ");
+		_logger->print(sensorId);
+		_logger->print(" h: ");
+		_logger->print(h);
+		_logger->print(" s: ");
+		_logger->print(s);
+		_logger->print(" l: ");
+		_logger->println(l);
+#endif
 
 		if (*color != _colorSensorStatus[sensorId])		// color has changed
 		{

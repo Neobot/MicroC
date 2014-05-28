@@ -42,7 +42,7 @@ Task asservissement(PERIODE_ASSERV_MS);
 Task commLect(PERIODE_COM_LECTURE);
 Task commEcrit(PERIODE_COM_ECRITURE);
 Task oneSecond(1000);
-Task readColorSensors(50);
+Task readColorSensors(250);
 Task debugEnvoie(5);
 
 Adafruit_TCS34725 colorSensor1(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
@@ -180,12 +180,12 @@ void envoiConsigne()
 
 void litEtEnvoieSonar()
 {
-    int ag = analogRead(PIN_SONAR_AV_G);
+	int ag = analogRead(PIN_SONAR_AV_G);	// max 4096 = 1024 cm
     int ad = analogRead(PIN_SONAR_AV_D);
     int rg = analogRead(PIN_SONAR_AR_G);
     int rd = analogRead(PIN_SONAR_AR_D);
 
-    int valmax = 397;
+	int valmax = 397;		// max 1 meter
 
 	ag = constrain(ag, 0, valmax);
 	ad = constrain(ad, 0, valmax);
@@ -211,13 +211,6 @@ void litEtEnvoieSonar()
 
     batCom.sendSonars(ag, ad, rg, rd);
 }
-
-void enableColorSensors(bool enable)
-{
-	colorSensor1.setInterrupt(!enable);
-	colorSensor2.setInterrupt(!enable);
-}
-
 
 void bougeServo()
 {
@@ -387,17 +380,21 @@ void setup()
 
 	setLedRGB(0, 0, 255);	// bleu = waiting for PC
 
-#if ENABLE_PC_COMM == true
-// wait for PC to be ready
-	while (!batRobot._pingReceived)
-	{
-		if (commLect.ready())
-			batCom.comm_read();
+	batRobot.disableColorSensor(Robot::ColorSensor1);
+	batRobot.disableColorSensor(Robot::ColorSensor2);
 
-		if (oneSecond.ready())
-			batCom.sendInit();
-	}
-#endif
+	// wait for PC to be ready
+		while (!batRobot._pingReceived)
+		{
+			if (commLect.ready())
+				batCom.comm_read();
+
+			if (oneSecond.ready())
+				batCom.sendInit();
+
+			if (!ENABLE_PC_COMM)
+				break;
+		}
 
 #ifndef NO_JACK
 	bool jackPlugged = digitalRead(PIN_JACK) == LOW;
@@ -440,13 +437,10 @@ void setup()
     batRobot.passageAuPointSuivant();
     batRobot.vaVersPointSuivant();
 
-	enableColorSensors(true);
-
 	batLogger.println("Here we gooooo!");
 
 	batCom.sendGo(estJaune);
 }
-
 
 /*********************************************************************************/
 /*                                 Main loop                                     */
@@ -455,21 +449,26 @@ void setup()
 
 void loop()
 {
-    if (commLect.ready())
-        batCom.comm_read();
+	if (ENABLE_PC_COMM)
+	{
+		if (commLect.ready())
+			batCom.comm_read();
 
-    if (commEcrit.ready())
-    {
-        batCom.sendPosition();
-		litEtEnvoieSonar();
-    }
+		if (commEcrit.ready())
+		{
+			batCom.sendPosition();
+			litEtEnvoieSonar();
+		}
+	}
 
 	if (readColorSensors.ready())
+	{
 		batCom.sendColorSensorsEvents();
+	}
 
     if (asservissement.ready())
     {
-        MAJPosition();
+		MAJPosition();
         batRobot.vaVersPointSuivant();
         batRobot.calculConsigne();
         batRobot.calculCommande();
