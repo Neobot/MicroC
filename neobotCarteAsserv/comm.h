@@ -14,7 +14,7 @@
 
 class Logger;
 
-#define MAX_PARAMETERS 10
+#define MAX_PARAMETERS 25
 
 class Comm
 {

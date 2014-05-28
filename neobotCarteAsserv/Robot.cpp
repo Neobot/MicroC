@@ -309,6 +309,10 @@ bool Robot::passageAuPointSuivant()
 				_pidOrientation.changeEtat(true);
 			}
 		}
+		else
+		{
+			pointSuivant = position;
+		}
         return true;
     }
 

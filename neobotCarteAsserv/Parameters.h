@@ -22,6 +22,7 @@
 #define PERIODE_ASSERV_MS 5.0
 #define PERIODE_COM_LECTURE 50.0
 #define PERIODE_COM_ECRITURE 50.0
+#define PERIODE_READ_COLOR_SENSOR 50.0
 
 #define TPS_MATCH 90000
 
@@ -32,8 +33,8 @@
 #define ENTRAXE_MM 340.6 // mm
 #define DIAMETRE_ROUE_MM 57.6 // en mm
 
-#define ACCELARATION_MAX_EN_REEL_ROT 0.004
-#define ACCELARATION_MAX_EN_REEL_LIN 0.004 // en mm/ms¬≤ ou pas : 0.003 * PERIODE_ASSERV_MS * PERIODE_ASSERV_MS * COEFF_CONVERTION_PAS_METRE // 1m/s¬≤ => 0.001 mm/ms¬≤ => 0.001*Te¬≤ mm mais comme on travaille en pas on multiplis pas le coeef de correction
+#define ACCELARATION_MAX_EN_REEL_ROT 0.01
+#define ACCELARATION_MAX_EN_REEL_LIN 0.0075 // en mm/ms¬≤ ou pas : 0.003 * PERIODE_ASSERV_MS * PERIODE_ASSERV_MS * COEFF_CONVERTION_PAS_METRE // 1m/s¬≤ => 0.001 mm/ms¬≤ => 0.001*Te¬≤ mm mais comme on travaille en pas on multiplis pas le coeef de correction
 
 #define VITESSE_MAX_REEL 1.4
 #define VITESSE_MAX .9 * VITESSE_MAX_REEL // mm/ms
@@ -46,8 +47,8 @@
 
 // Consigne
 
-#define COEFF_FREINAGE_DIST 1.2
-#define COEFF_FREINAGE_ANG 1.2
+#define COEFF_FREINAGE_DIST 3
+#define COEFF_FREINAGE_ANG 1
 #define COEFF_AUGMENTATION_FREINAGE 4
 
 #define DIST_ARRIVE_DIST 10.0 // mm
@@ -55,13 +56,13 @@
 
 // PID
 #define ACTIVE_PID_DISTANCE true
-#define KP_DISTANCE 2.2
-#define KD_DISTANCE 0.8
+#define KP_DISTANCE 1.0
+#define KD_DISTANCE 0.0
 #define KI_DISTANCE 0.0 // ca fout la merde ;)
 
 #define ACTIVE_PID_ANGLE true
-#define KP_ANGLE 1.6
-#define KD_ANGLE 1.9
+#define KP_ANGLE 0.0
+#define KD_ANGLE 0.0
 #define KI_ANGLE 0.0 // ca fout la merde ;)
 
 // Odometrie

@@ -69,6 +69,7 @@ class Consigne
 	  Phase _phasePrec;
       
       float _dccCoeff;
+	  float _dccAugmetationDcc;
 };
 
 #endif // CONSIGNE_H

@@ -42,23 +42,20 @@ Task asservissement(PERIODE_ASSERV_MS);
 Task commLect(PERIODE_COM_LECTURE);
 Task commEcrit(PERIODE_COM_ECRITURE);
 Task oneSecond(1000);
-Task readColorSensors(250);
+Task readColorSensors(PERIODE_READ_COLOR_SENSOR);
 Task debugEnvoie(5);
 
 Adafruit_TCS34725 colorSensor1(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
-Adafruit_TCS34725 colorSensor2(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X); // ecrit wire1 mais non compilable
+Adafruit_TCS34725 colorSensor2(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
 
 Robot batRobot(&colorSensor1, &colorSensor2, PERIODE_ASSERV_MS);
 Comm batCom(&batRobot);
 Logger batLogger(&batCom, ENABLE_DEBUG, ENABLE_PC_COMM);
 
-
-
 #ifdef SIMULATION
 	Simulation simMotorL(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, MAX_PWM_MOTORS, 1.4, 0.01);
 	Simulation simMotorR(PERIODE_ASSERV_MS, COEFF_CONVERTION_PAS_MM, MAX_PWM_MOTORS, 1.4, 0.01);
 #endif
-
 
 unsigned int initEncodeurG;
 unsigned int initEncodeurD;
@@ -317,7 +314,7 @@ void setup()
 	batRobot.setLogger(&batLogger);
 
     //register parameters which can be changed trhough the comm
-    //Max number of parameters is currently 10, defined in com.h
+	//Max number of parameters is currently 10, defined in comm.h
     batCom.registerParameter(&batRobot._pidDist._kp, "PID Distance P");
     batCom.registerParameter(&batRobot._pidDist._kd, "PID Distance D");
     batCom.registerParameter(&batRobot._pidOrientation._kp, "PID Orientation P");
@@ -328,6 +325,8 @@ void setup()
 	batCom.registerParameter(&batRobot._consigneOrientation._vitessMax, "Vitesse rot");
 	batCom.registerParameter(&batRobot._consigneDist._dccCoeff, "coeff freinage dist");
 	batCom.registerParameter(&batRobot._consigneOrientation._dccCoeff, "coeff freinage rot");
+	batCom.registerParameter(&batRobot._consigneDist._dccAugmetationDcc, "coeff augment deceleration");
+
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
@@ -346,22 +345,6 @@ void setup()
     //batRobot.ajoutPoint(1000, -50, true);
 
 	Serial.begin(115200);
-
-	//int restartBtn = digitalRead(PIN_RESTART);
-    //int oldRestartBtnValue = digitalRead(PIN_RESTART);
-
-    /* while(!batRobot._pingReceived)
-  {
-    batCom.comm_read();
-    restartBtn = digitalRead(PIN_RESTART);
-    if (oldRestartBtnValue != restartBtn)
-    {
-      batCom.restart();
-      oldRestartBtnValue = restartBtn;
-      batLogger.println("Restart PC");
-    }
-
-  }*/
 
 	delay(2000);
 	batLogger.println("Restart arduino");
@@ -384,17 +367,17 @@ void setup()
 	batRobot.disableColorSensor(Robot::ColorSensor2);
 
 	// wait for PC to be ready
-		while (!batRobot._pingReceived)
-		{
-			if (commLect.ready())
-				batCom.comm_read();
+	while (!batRobot._pingReceived)
+	{
+		if (commLect.ready())
+			batCom.comm_read();
 
-			if (oneSecond.ready())
-				batCom.sendInit();
+		if (oneSecond.ready())
+			batCom.sendInit();
 
-			if (!ENABLE_PC_COMM)
-				break;
-		}
+		if (!ENABLE_PC_COMM)
+			break;
+	}
 
 #ifndef NO_JACK
 	bool jackPlugged = digitalRead(PIN_JACK) == LOW;
