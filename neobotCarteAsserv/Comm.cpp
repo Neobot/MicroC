@@ -318,7 +318,8 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
         data = readInt16(data, x);
         data = readInt16(data, y);
         data = readInt16(data, thetaInt);
-        float theta = thetaInt / ANGLE_FACTOR;
+		float theta = (float) thetaInt;
+		theta /= ANGLE_FACTOR;
 
         Point p;
         p.x = x;

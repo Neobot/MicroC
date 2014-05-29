@@ -1,7 +1,7 @@
-#define COUNTDOWN
-#define NO_JACK
+//#define COUNTDOWN
+//#define NO_JACK
 //#define SIMULATION						// simulates motors & robot movements
-#define NO_TPS_MATCH
+//#define NO_TPS_MATCH
 
 #define ENABLE_DEBUG		true		// if false, disable all logging
 #define ENABLE_PC_COMM		true		// enable comm to PC and redirect debug messages to PC

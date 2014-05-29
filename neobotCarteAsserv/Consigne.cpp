@@ -24,6 +24,18 @@ Consigne::Consigne(float vmax, float amax, float periodeConsigne, float dccCoeff
 	this->_phasePrec = Arrive;
 }
 
+void Consigne::reset()
+{
+	this->_consigne = 0.0;
+	this->_consignePrec = 0.0;
+	this->_distDemande = 0.0;
+
+	this->_phase = Arrive;
+	this->_phasePrec = Arrive;
+
+	this->_vitessCourrante = 0.0;
+}
+
 float Consigne::calculConsigne(float deltaDistRealise)
 {
 	this->_consignePrec = this->_consigne;
@@ -187,6 +199,18 @@ float Consigne::transformeConsigneEnVitesse(float consigne)
 bool Consigne::estArrive()
 {
 	if (this->_phase == Arrive)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Consigne::etaitArrive()
+{
+	if (this->_phasePrec == Arrive)
 	{
 		return true;
 	}

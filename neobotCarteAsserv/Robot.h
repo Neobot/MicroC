@@ -28,6 +28,7 @@
  */
 
 class Logger;
+class Comm;
 
 class Robot
 {
@@ -58,11 +59,12 @@ class Robot
 	};
   
 	void setLogger(Logger* logger);
+	void setComm(Comm* comm);
 
     void teleport(Point point);
     void forceObjectif(Point point);
     void ajoutPoint(Point point);
-    void ajoutPoint(float x, float y, bool pointArret = false, int typeDeplacement =1, float vitessMax = 100);
+	void ajoutPoint(float x, float y, bool pointArret = false, int typeDeplacement =0, float vitessMax = 100);
     void flush();
     void stop();
     void majPosition(float pasRoueGauche, float pasRoueDroite);
@@ -76,7 +78,8 @@ class Robot
     bool passageAuPointSuivant();
     void vaVersPointSuivant();
     bool estArrive();
-    bool quelSens();
+	bool etaitArrive();
+	bool quelSens();
 	void attend(unsigned long attente); // tps en milliseconde
     bool estEnAttente();
     void stopAttente();
@@ -86,6 +89,9 @@ class Robot
 	bool colorSensorValueHasChanged(int sensorId, ColorSensorState *color);
 	void startPump(int pumpId);
 	void stopPump(int pumpId);
+
+	void MAJSonar(int avg, int avd, int arg, int ard);
+	void detectObstacleFrein();
 
     float pasPrecendentGauche;
     float pasPrecendentDroit;
@@ -99,6 +105,7 @@ class Robot
     QueueList<Point> queue;
     Point pointSuivant;
     Point position;
+	Point sauvPointSuivant;
     
     float _periodAsserv;
     
@@ -118,6 +125,20 @@ class Robot
 
 	bool _pingReceived;
 
+	bool _sens;
+
+	int _sonar_AVD;
+	int _sonar_AVG;
+	int _sonar_ARD;
+	int _sonar_ARG;
+
+	bool _obstAvD;
+	bool _obstAvG;
+	bool _obstArD;
+	bool _obstArG;
+
+	bool _stopObst;
+
 private:
     bool _tourneFini;
 
@@ -125,6 +146,8 @@ private:
 	ColorSensorState _colorSensorStatus[2];
 	Adafruit_TCS34725* _colorSensor[2];
 	Logger* _logger;
+	Comm* _comm;
+
 };
 
 #endif // ROBOT_H

@@ -5,8 +5,8 @@
 #define PIN_SERVO_4 7
 
 // auxiliary motors on/off
-#define PIN_MOTEUR_1 11
-#define PIN_MOTEUR_2 12
+#define PIN_MOTEUR_1 12
+#define PIN_MOTEUR_2 11
 #define PIN_MOTEUR_3 30
 #define PIN_MOTEUR_4 31
 
@@ -45,10 +45,10 @@
 #define PIN_SHARP_5 4
 #define PIN_SHARP_6 5
 
-#define PIN_SONAR_AV_G 6 //ok
+#define PIN_SONAR_AV_G 9 //ok
 #define PIN_SONAR_AV_D 7 //ok
-#define PIN_SONAR_AR_G 8 //ok
-#define PIN_SONAR_AR_D 9 //ok
+#define PIN_SONAR_AR_G 6 //ok
+#define PIN_SONAR_AR_D 8 //ok
 
 #define PIN_CONTACTEUR_1 25
 #define PIN_CONTACTEUR_2 26

@@ -1,12 +1,13 @@
 #include "Robot.h"
 #include "IOConfig.h"
 #include "Logger.h"
+#include "Comm.h";
 
 Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, float periodAsserv, float x, float y, float theta) :
 	_pidDist(ACTIVE_PID_DISTANCE, KP_DISTANCE, KD_DISTANCE, KI_DISTANCE),
 	_pidOrientation(ACTIVE_PID_ANGLE, KP_ANGLE, KD_ANGLE, KI_ANGLE),
 	_consigneDist(VITESSE_MAX, ACCELARATION_MAX_EN_REEL_LIN, periodAsserv, COEFF_FREINAGE_DIST, DIST_ARRIVE_DIST),
-	_consigneOrientation(VITESSE_MAX_ROT, ACCELARATION_MAX_EN_REEL_ROT, periodAsserv, COEFF_FREINAGE_ANG, DIST_ARRIVE_ANG), _logger(0)
+	_consigneOrientation(VITESSE_MAX_ROT, ACCELARATION_MAX_EN_REEL_ROT, periodAsserv, COEFF_FREINAGE_ANG, DIST_ARRIVE_ANG), _logger(0), _comm(0)
 {
     _tourneFini = false;
     _pingReceived = false;
@@ -35,6 +36,10 @@ Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, f
 	_colorSensor[ColorSensor1] = colorSensor1;
 	_colorSensor[ColorSensor2] = colorSensor2;
 
+	_sens = true;
+	_stopObst = false;
+
+	MAJSonar(255, 255, 255, 255);
 }
 
 void Robot::setLogger(Logger *logger)
@@ -42,14 +47,19 @@ void Robot::setLogger(Logger *logger)
 	_logger = logger;
 }
 
+void Robot::setComm(Comm *comm)
+{
+	_comm = comm;
+}
+
 void Robot::teleport(Point point)
 {
     position = point;
-    flush();
-    pointSuivant = position;
+	stop();
 	_pidDist.reset();
 	_pidOrientation.reset();
-    
+	_consigneDist.reset();
+	_consigneOrientation.reset();
 }
 
 void Robot::forceObjectif(Point point)
@@ -83,8 +93,8 @@ void Robot::stop()
 {
     flush();
 
-    pointSuivant.x = position.x + _consigneDist._distDcc * cos(position.theta);
-    pointSuivant.y = position.y + _consigneDist._distDcc * sin(position.theta);
+	pointSuivant.x = position.x + 0.5 * _consigneDist._distDcc * cos(position.theta);
+	pointSuivant.y = position.y + 0.5 * _consigneDist._distDcc * sin(position.theta);
 }
 
 void Robot::majPosition(float pasRoueGauche, float pasRoueDroite)
@@ -191,10 +201,15 @@ void Robot::calculCommande()
                 _consigneOrientation.transformeDeltaDistanceEnConsigne(_deltaOrientRad * ENTRAXE_MM / 2.0)
                 );
 
+	float rd = -1.0*(_pidDist._commande - _pidOrientation._commande);
+	float rg = -1.0*(_pidDist._commande + _pidOrientation._commande);
+
+	_sens = rd + rg < 0 ;
+
     // calcule des commandes moteurs
     // -1 devant... ils doivent √™tre cabl√© √† l'envers...
-    _commandeRoueDroite = (int) filtreCommandeRoue(-1.0*(_pidDist._commande - _pidOrientation._commande));
-    _commandeRoueGauche = (int) filtreCommandeRoue(-1.0*(_pidDist._commande + _pidOrientation._commande));
+	_commandeRoueDroite = (int) filtreCommandeRoue(rd);
+	_commandeRoueGauche = (int) filtreCommandeRoue(rg);
 	//_logger->print("*** "); _logger->println(_consigneDist.transformeDeltaDistanceEnConsigne(_deltaDistMm));
 }
 
@@ -286,14 +301,40 @@ void Robot::vaVersPointSuivant()
 
 bool Robot::estArrive()
 {
-    return _consigneDist.estArrive();
+	if (_typeDeplacement != TourneSeulement)
+		return _consigneDist.estArrive();
+	else
+		return _consigneOrientation.estArrive();
+}
+
+bool Robot::etaitArrive()
+{
+	if (_typeDeplacement != TourneSeulement)
+		return _consigneDist.etaitArrive();
+	else
+		return _consigneOrientation.etaitArrive();
 }
 
 bool Robot::passageAuPointSuivant()
 {
 	if (estArrive())
     {
-        _tourneFini = false;
+
+		if (_stopObst)
+		{
+			_stopObst = false;
+			flush();
+
+			_comm->sendSonars(
+				_obstAvG ? _sonar_AVG : 255,
+				_obstAvD ? _sonar_AVD : 255,
+				_obstArG ? _sonar_ARG : 255,
+				_obstArD ? _sonar_ARD : 255
+			);
+		}
+
+		_tourneFini = false;
+
 		if (!queue.isEmpty())
 		{
 			pointSuivant = queue.pop();
@@ -311,9 +352,13 @@ bool Robot::passageAuPointSuivant()
 		}
 		else
 		{
-			pointSuivant = position;
+			teleport(position);
+
+			if (etaitArrive())
+				return false;
 		}
-        return true;
+
+		return true;
     }
 
     return false;
@@ -322,11 +367,8 @@ bool Robot::passageAuPointSuivant()
 //true == avance
 //false == recule
 bool Robot::quelSens()
-{
-    if (_commandeRoueGauche + _commandeRoueDroite > 0)
-        return 1;
-    else
-        return 0;
+{	
+	return _sens;
 }
 
 void Robot::attend(unsigned long attente) // tps ne milliseconde
@@ -444,3 +486,100 @@ void Robot::stopPump(int pumpId)
 	}
 }
 
+void Robot::MAJSonar(int avg, int avd, int arg, int ard)
+{
+	_sonar_AVD = avg;
+	_sonar_AVG = avd;
+	_sonar_ARD = ard;
+	_sonar_ARG = arg;
+}
+
+void Robot::detectObstacleFrein()
+{
+
+#ifdef DEBUG_ULTRASON
+		_logger->print("AV DR ");
+		_logger->print(_sonar_AVD);
+		_logger->print(" AV GA ");
+		_logger->print(_sonar_AVG);
+		_logger->print(" AR DR ");
+		_logger->print(_sonar_ARD);
+		_logger->print(" AR GA ");
+		_logger->println(_sonar_ARG);
+#endif
+
+	if (_tourneFini != false)
+	{
+		// 255 => 1000 mm
+		int seuil = (int) (1.1 * 255 * _consigneDist._distDcc / 1000);
+
+#ifdef DEBUG_ULTRASON
+		_logger->print("seuil ");
+		_logger->println(seuil);
+#endif
+
+		bool avance = true;
+
+		if (quelSens()) // avance
+		{
+			_obstAvD = _sonar_AVD <= seuil;
+			_obstAvG = _sonar_AVG <= seuil;
+			_obstArG = 0;
+			_obstArD = 0;
+			avance = true;
+		}
+		else
+		{
+			_obstAvD = 0;
+			_obstAvG = 0;
+			_obstArG = _sonar_ARG <= seuil;
+			_obstArD = _sonar_ARD <= seuil;
+			avance = false;
+		}
+
+#ifdef DEBUG_ULTRASON
+		_logger->print(_obstAvD);
+		_logger->print(" ");
+		_logger->print(_obstAvG);
+		_logger->print(" ");
+		_logger->print(_obstArG);
+		_logger->print(" ");
+		_logger->println(_obstArD);
+#endif
+
+		if ((_obstAvD || _obstAvG || _obstArG || _obstArD) && !_stopObst)
+		{
+			sauvPointSuivant = pointSuivant;
+			float x = position.x;
+			float y = position.y;
+			_stopObst = true;
+			if (avance)
+			{
+				x += _consigneDist._distDcc * cos(position.theta);
+				y += _consigneDist._distDcc * sin(position.theta);
+			}
+			else
+			{
+				x -= _consigneDist._distDcc * cos(position.theta);
+				y -= _consigneDist._distDcc * sin(position.theta);
+			}
+
+			pointSuivant.x = x;
+			pointSuivant.y = y;
+			pointSuivant.pointArret = true;
+
+#ifdef DEBUG_ULTRASON
+		_logger->print(x);
+		_logger->print(" ");
+		_logger->println(y);
+#endif
+
+		}
+/*		else if (_stopObst)
+		{
+			_stopObst = false;
+			pointSuivant = sauvPointSuivant;
+		}*/
+
+	}
+}

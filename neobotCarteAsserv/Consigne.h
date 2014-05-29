@@ -38,7 +38,9 @@ class Consigne
       float transformeDeltaDistanceEnConsigne(float delta);
       float transformeConsigneEnVitesse(float consigne);
       bool estArrive();
+	  bool etaitArrive();
       bool calcEstArrive();
+	  void reset();
       
       float _consigne;
       

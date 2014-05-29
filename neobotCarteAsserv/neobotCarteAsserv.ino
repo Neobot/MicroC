@@ -41,6 +41,7 @@
 Task asservissement(PERIODE_ASSERV_MS);
 Task commLect(PERIODE_COM_LECTURE);
 Task commEcrit(PERIODE_COM_ECRITURE);
+Task sonar(PERIODE_COM_ECRITURE);
 Task oneSecond(1000);
 Task readColorSensors(PERIODE_READ_COLOR_SENSOR);
 Task debugEnvoie(5);
@@ -144,8 +145,8 @@ void MAJPosition()
 
     batRobot.majPosition((float) dg, (float) dd);
 
-	if (batRobot.checkBlocked(speedL, speedMotL, speedR, speedMotR))
-		batCom.sendEvent(EVENT_IS_BLOCKED);
+	/*if (batRobot.checkBlocked(speedL, speedMotL, speedR, speedMotR))
+		batCom.sendEvent(EVENT_IS_BLOCKED);*/
 }
 
 void envoiConsigne()
@@ -194,19 +195,9 @@ void litEtEnvoieSonar()
     rg = map(rg, 0, valmax, 0, 255);
     rd = map(rd, 0, valmax, 0, 255);
 
-#ifdef DEBUG_ULTRASON
-    batLogger.print("ag=");
-    batLogger.print(ag);
-    batLogger.print(" ad=");
-    batLogger.print(ad);
-    batLogger.print(" rg=");
-    batLogger.print(rg);
-    batLogger.print(" rd=");
-    batLogger.print(rd);
-    batLogger.println(" ");
-#endif
-
-    batCom.sendSonars(ag, ad, rg, rd);
+	//batCom.sendSonars(ag, ad, rg, rd);
+	batRobot.MAJSonar(ag, ad, rg, rd);
+	batRobot.detectObstacleFrein();
 }
 
 void bougeServo()
@@ -312,6 +303,7 @@ void setup()
 #endif
 
 	batRobot.setLogger(&batLogger);
+	batRobot.setComm(&batCom);
 
     //register parameters which can be changed trhough the comm
 	//Max number of parameters is currently 10, defined in comm.h
@@ -338,7 +330,7 @@ void setup()
     //servoArD.detach();
 
 	//batRobot.ajoutPoint(200, -50, false);
-	//batRobot.ajoutPoint(300, 0, true);
+	batRobot.ajoutPoint(600, 0, true);
     //batRobot.ajoutPoint(400, 0, false);
     //batRobot.ajoutPoint(600, -50, false);
     //batRobot.ajoutPoint(800, -0, false);
@@ -440,8 +432,12 @@ void loop()
 		if (commEcrit.ready())
 		{
 			batCom.sendPosition();
-			litEtEnvoieSonar();
 		}
+	}
+
+	if (sonar.ready())
+	{
+		litEtEnvoieSonar();
 	}
 
 	if (readColorSensors.ready())
