@@ -139,6 +139,8 @@ class Robot
 
 	bool _stopObst;
 
+	float coeffDetectionObst;
+
 private:
     bool _tourneFini;
 

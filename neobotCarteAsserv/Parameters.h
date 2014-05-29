@@ -4,9 +4,9 @@
 //#define NO_TPS_MATCH
 
 #define ENABLE_DEBUG		true		// if false, disable all logging
-#define ENABLE_PC_COMM		true		// enable comm to PC and redirect debug messages to PC
+#define ENABLE_PC_COMM		false		// enable comm to PC and redirect debug messages to PC
 
-#define DEBUG_RECEIVED_COMM_INSTRUCTION
+//#define DEBUG_RECEIVED_COMM_INSTRUCTION
 //#define DEBUG_ENCODER
 //#define DEBUG_SPEED
 //#define DEBUG_POSITION
@@ -33,8 +33,8 @@
 #define ENTRAXE_MM 340.6 // mm
 #define DIAMETRE_ROUE_MM 57.6 // en mm
 
-#define ACCELARATION_MAX_EN_REEL_ROT 0.01
-#define ACCELARATION_MAX_EN_REEL_LIN 0.0075 // en mm/ms¬≤ ou pas : 0.003 * PERIODE_ASSERV_MS * PERIODE_ASSERV_MS * COEFF_CONVERTION_PAS_METRE // 1m/s¬≤ => 0.001 mm/ms¬≤ => 0.001*Te¬≤ mm mais comme on travaille en pas on multiplis pas le coeef de correction
+#define ACCELARATION_MAX_EN_REEL_ROT 0.009
+#define ACCELARATION_MAX_EN_REEL_LIN 0.007 // en mm/ms¬≤ ou pas : 0.003 * PERIODE_ASSERV_MS * PERIODE_ASSERV_MS * COEFF_CONVERTION_PAS_METRE // 1m/s¬≤ => 0.001 mm/ms¬≤ => 0.001*Te¬≤ mm mais comme on travaille en pas on multiplis pas le coeef de correction
 
 #define VITESSE_MAX_REEL 1.4
 #define VITESSE_MAX .9 * VITESSE_MAX_REEL // mm/ms
@@ -49,19 +49,19 @@
 
 #define COEFF_FREINAGE_DIST 3
 #define COEFF_FREINAGE_ANG 1
-#define COEFF_AUGMENTATION_FREINAGE 4
+#define COEFF_AUGMENTATION_FREINAGE 5
 
 #define DIST_ARRIVE_DIST 10.0 // mm
 #define DIST_ARRIVE_ANG 1 * PI * ENTRAXE_MM / 360.0 // en degr√©e 0.1¬∞ ~ 0.35 mm
 
 // PID
 #define ACTIVE_PID_DISTANCE true
-#define KP_DISTANCE 1.0
+#define KP_DISTANCE 2.0
 #define KD_DISTANCE 0.0
 #define KI_DISTANCE 0.0 // ca fout la merde ;)
 
 #define ACTIVE_PID_ANGLE true
-#define KP_ANGLE 0.0
+#define KP_ANGLE 1.0
 #define KD_ANGLE 0.0
 #define KI_ANGLE 0.0 // ca fout la merde ;)
 

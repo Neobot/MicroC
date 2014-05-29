@@ -318,6 +318,7 @@ void setup()
 	batCom.registerParameter(&batRobot._consigneDist._dccCoeff, "coeff freinage dist");
 	batCom.registerParameter(&batRobot._consigneOrientation._dccCoeff, "coeff freinage rot");
 	batCom.registerParameter(&batRobot._consigneDist._dccAugmetationDcc, "coeff augment deceleration");
+	batCom.registerParameter(&batRobot.coeffDetectionObst, "coeff detection adv");
 
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
@@ -329,8 +330,12 @@ void setup()
     //servoArG.detach();
     //servoArD.detach();
 
+	// x => 430
+	// y => 170
+	// theta 36.87 => 0.64
+
 	//batRobot.ajoutPoint(200, -50, false);
-	batRobot.ajoutPoint(600, 0, true);
+	//batRobot.ajoutPoint(600, 0, true);
     //batRobot.ajoutPoint(400, 0, false);
     //batRobot.ajoutPoint(600, -50, false);
     //batRobot.ajoutPoint(800, -0, false);
@@ -372,14 +377,19 @@ void setup()
 	}
 
 #ifndef NO_JACK
-	bool jackPlugged = digitalRead(PIN_JACK) == LOW;
+	bool jackPlugged = digitalRead(PIN_JACK) == HIGH;
 
 	if (!jackPlugged)
 	{
 		batLogger.println("Please plug the jack");
 
 		while(!jackPlugged)
-			jackPlugged = digitalRead(PIN_JACK) == LOW;
+		{
+			jackPlugged = digitalRead(PIN_JACK) == HIGH;
+
+			if (commLect.ready())
+				batCom.comm_read();
+		}
 	}
 
 	delay(2000);
@@ -389,7 +399,10 @@ void setup()
     while(jackPlugged)
 	{
 		bool estJaune = readColor();
-		jackPlugged = digitalRead(PIN_JACK) == LOW;
+		jackPlugged = digitalRead(PIN_JACK) == HIGH;
+
+		if (commLect.ready())
+			batCom.comm_read();
 	}
 #endif
 
@@ -397,6 +410,32 @@ void setup()
 
 	batLogger.print("Selected color: ");
 	batLogger.println(estJaune ? "Yellow" : "Red");
+
+	// x => 430
+	// y => 170
+	// theta 36.87 => 0.64
+
+	Point pt;
+	pt.x = 430;
+	pt.y = estJaune ? 2830 : 170;
+	pt.theta = estJaune ? -0.93 : 0.93;
+
+	batRobot.teleport(pt);
+
+	if (estJaune)
+	{
+		batRobot.ajoutPoint(600, 2703, true);
+		batRobot.ajoutPoint(600, 1900, true);
+		batRobot.ajoutPoint(600, 1100, true);
+	}
+	else
+	{
+		batRobot.ajoutPoint(600, 297, true);
+		batRobot.ajoutPoint(600, 1100, true);
+		batRobot.ajoutPoint(600, 1900, true);
+	}
+
+	//batRobot.ajoutPoint(200, -50, false);
 
 #ifdef COUNTDOWN
     for(int i = 5; i > 0; --i)
@@ -453,7 +492,7 @@ void loop()
         batRobot.calculCommande();
         envoiConsigne();
 
-        if(batRobot.passageAuPointSuivant())
+		if(batRobot.passageAuPointSuivant() && ENABLE_PC_COMM)
         {
             batCom.sendConsigne();
 			batCom.sendEvent(EVENT_IS_ARRIVED);

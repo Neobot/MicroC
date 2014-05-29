@@ -39,6 +39,8 @@ Robot::Robot(Adafruit_TCS34725 *colorSensor1, Adafruit_TCS34725 *colorSensor2, f
 	_sens = true;
 	_stopObst = false;
 
+	coeffDetectionObst = 1;
+
 	MAJSonar(255, 255, 255, 255);
 }
 
@@ -352,7 +354,7 @@ bool Robot::passageAuPointSuivant()
 		}
 		else
 		{
-			teleport(position);
+			//teleport(position);
 
 			if (etaitArrive())
 				return false;
@@ -511,7 +513,7 @@ void Robot::detectObstacleFrein()
 	if (_tourneFini != false)
 	{
 		// 255 => 1000 mm
-		int seuil = (int) (1.1 * 255 * _consigneDist._distDcc / 1000);
+		int seuil = (int) (coeffDetectionObst * 255 * _consigneDist._distDcc / 1000 + 50);
 
 #ifdef DEBUG_ULTRASON
 		_logger->print("seuil ");
