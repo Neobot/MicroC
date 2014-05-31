@@ -14,7 +14,7 @@
 //#define DEBUG_CONSIGNE_MOTEUR
 //#define DEBUG_CONSIGNE_LIN
 //#define DEBUG_CONSIGNE_ROT
-//#define DEBUG_ULTRASON
+#define DEBUG_ULTRASON
 //#define DEBUG_COLOR_SENSORS
 
 #define MAX_PWM 4095.0
@@ -33,8 +33,8 @@
 #define ENTRAXE_MM 340.6 // mm
 #define DIAMETRE_ROUE_MM 57.6 // en mm
 
-#define ACCELARATION_MAX_EN_REEL_ROT 0.009
-#define ACCELARATION_MAX_EN_REEL_LIN 0.007 // en mm/ms¬≤ ou pas : 0.003 * PERIODE_ASSERV_MS * PERIODE_ASSERV_MS * COEFF_CONVERTION_PAS_METRE // 1m/s¬≤ => 0.001 mm/ms¬≤ => 0.001*Te¬≤ mm mais comme on travaille en pas on multiplis pas le coeef de correction
+#define ACCELARATION_MAX_EN_REEL_ROT 0.01
+#define ACCELARATION_MAX_EN_REEL_LIN 0.006 // en mm/ms¬≤ ou pas : 0.003 * PERIODE_ASSERV_MS * PERIODE_ASSERV_MS * COEFF_CONVERTION_PAS_METRE // 1m/s¬≤ => 0.001 mm/ms¬≤ => 0.001*Te¬≤ mm mais comme on travaille en pas on multiplis pas le coeef de correction
 
 #define VITESSE_MAX_REEL 1.4
 #define VITESSE_MAX .9 * VITESSE_MAX_REEL // mm/ms
@@ -49,7 +49,7 @@
 
 #define COEFF_FREINAGE_DIST 3
 #define COEFF_FREINAGE_ANG 1
-#define COEFF_AUGMENTATION_FREINAGE 5
+#define COEFF_AUGMENTATION_FREINAGE 4
 
 #define DIST_ARRIVE_DIST 10.0 // mm
 #define DIST_ARRIVE_ANG 1 * PI * ENTRAXE_MM / 360.0 // en degr√©e 0.1¬∞ ~ 0.35 mm

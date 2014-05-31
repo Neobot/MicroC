@@ -435,7 +435,7 @@ void setup()
 		batRobot.ajoutPoint(600, 1900, true);
 	}
 
-	//batRobot.ajoutPoint(200, -50, false);
+	//batRobot.ajoutPoint(1000, 0, true);
 
 #ifdef COUNTDOWN
     for(int i = 5; i > 0; --i)
