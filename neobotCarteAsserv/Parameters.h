@@ -17,6 +17,12 @@
 #define DEBUG_ULTRASON
 //#define DEBUG_COLOR_SENSORS
 
+#define GRAPH_VCC
+#define GRAPH_ULTRASON
+
+#define VccGraph 0
+#define UltrasonGraph 1
+
 #define MAX_PWM 4095.0
 
 #define PERIODE_ASSERV_MS 5.0
@@ -77,4 +83,5 @@
 #define COEF_CORRECTION_ROUE_FOLLE_GAUCHE 1.0 - COEF_CORRECTION_ROUE_FOLLES / 2.0  // coef de corrections des valeurs envoy√©es par les roues folles
 
 #define CORFUGE 0.0
+
 

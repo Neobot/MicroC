@@ -35,6 +35,7 @@ public:
   uint8_t* writeInt16(uint8_t* data, uint16_t value);
   uint8_t* writeInt32(uint8_t* data, uint32_t value);
   uint8_t* writeFloat(uint8_t* data, float value);
+  uint8_t* writeString(uint8_t* data, const String& str);
   
   void sendParameters();
   void sendParameterNames();
@@ -54,6 +55,10 @@ public:
 
   void registerParameter(float* value, const String& name, void (*setter)(float) = 0);
   void registerParameter(int* value, const String& name, void (*setter)(int) = 0);
+
+  void registerGraph(int graphId, GraphType type, const String& name, String parameterName[], int nbParameters);
+  void sendGraphValues(int graphId, float values[], int nbParameters);
+  void sendGraphSingleValue(int graphId, int paramId, float value);
 
 private:
   Robot* robot;

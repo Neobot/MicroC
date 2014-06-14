@@ -387,6 +387,20 @@ void setup()
 			break;
 	}
 
+#ifdef GRAPH_VCC
+	String vccParams[2] = {"vcc lin", "vcc rot"};
+	batCom.registerGraph(VccGraph, CurveGraph, "Vitesse", vccParams, 2);
+#endif
+
+#ifdef GRAPH_ULTRASON
+	String ultrasonParams[4] = {"AV DR", "AV GA", "AR DR", "AR GA"};
+	batCom.registerGraph(UltrasonGraph, BarGraph, "Sonars", ultrasonParams, 4);
+
+	//just for testing
+	float ultrasonValues[4] = {42.f,42.f,42.f,42.f};
+	batCom.sendGraphValues(UltrasonGraph, ultrasonValues, 4);
+#endif
+
 #ifndef NO_JACK
 	bool jackPlugged = digitalRead(PIN_JACK) == HIGH;
 
@@ -545,6 +559,10 @@ void loop()
 					}
 			#endif
 
+			#ifdef GRAPH_VCC
+				float vccValues[2] = {batRobot._consigneDist._distDcc, batRobot._consigneOrientation._distDcc};
+				batCom.sendGraphValues(VccGraph, vccValues, 2);
+			#endif
 
 			#ifdef DEBUG_PID
 			if (!batRobot._consigneDist.estArrive())

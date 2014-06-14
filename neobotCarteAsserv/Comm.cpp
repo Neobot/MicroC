@@ -93,7 +93,17 @@ uint8_t* Comm::writeFloat(uint8_t* data, float value)
 {
     uint32_t iValue = *((uint32_t*)&value);
     uint8_t* res = writeInt32(data, iValue);
-    return res;
+	return res;
+}
+
+uint8_t *Comm::writeString(uint8_t *data, const String &str)
+{
+	uint8_t len = str.length() + 1;
+	data = writeInt8(data, len);
+
+	str.toCharArray((char*)data, len);
+
+	return data + len + 1;
 }
 
 void Comm::sendParameterNames()
@@ -524,5 +534,54 @@ void Comm::registerParameter(int* value, const String& name, void (*setter)(int)
 
 	_parameters[_nbRegisteredParameters] =  Parameter(value, name, setter);
 	++_nbRegisteredParameters;
+}
+
+void Comm::registerGraph(int graphId, GraphType type, const String &name, String parameterName[], int nbParameters)
+{
+	uint8_t data[250];
+	uint8_t* dataPtr = &(data[0]);
+	dataPtr = writeInt8(dataPtr, graphId);
+	dataPtr = writeInt8(dataPtr, type);
+
+	uint8_t len = 2;
+	dataPtr = writeString(dataPtr, name); len += name.length() + 2;
+	dataPtr = writeInt8(dataPtr, nbParameters); len += 1;
+
+	for(int i = 0; i < nbParameters; ++i)
+	{
+		const String& paramName = parameterName[i];
+		dataPtr = writeString(dataPtr, paramName);
+		len += paramName.length() + 2;
+	}
+
+	protocol.sendMessage(INSTR_REGISTER_GRAPH, len, dataPtr);
+}
+
+void Comm::sendGraphValues(int graphId, float values[], int nbParameters)
+{
+	uint8_t len = nbParameters * 4 + 1;
+	uint8_t data[len];
+	uint8_t* dataPtr = &(data[0]);
+
+	dataPtr = writeInt8(dataPtr, graphId);
+	for(int i = 0; i < nbParameters; ++i)
+	{
+		dataPtr = writeFloat(dataPtr, values[i]);
+	}
+
+	protocol.sendMessage(INSTR_GRAPH_VALUES, len, dataPtr);
+}
+
+void Comm::sendGraphSingleValue(int graphId, int paramId, float value)
+{
+	uint8_t len = 4 + 2;
+	uint8_t data[len];
+	uint8_t* dataPtr = &(data[0]);
+
+	dataPtr = writeInt8(dataPtr, graphId);
+	dataPtr = writeInt8(dataPtr, paramId);
+	dataPtr = writeFloat(dataPtr, value);
+
+	protocol.sendMessage(INSTR_GRAPH_SINGLE_VALUE, len, dataPtr);
 }
 
