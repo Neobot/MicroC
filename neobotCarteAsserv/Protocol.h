@@ -10,13 +10,17 @@ class Protocol
         Protocol();
 
 		void sendMessage(uint8_t instruction, uint8_t length, uint8_t data[], uint8_t id = 0) const;
-		uint8_t read(); // returns true if frame finished
+		bool read(); // returns true if frame finished
 		uint8_t* getData();
 		uint8_t getInstruction();
 		uint8_t getLength();
 
+		void setCommEnabled(bool value);
+
     private:
-        enum MessageStates{FirstFF, SecondFF, Length, Instruction, ReadingData, Checksum};
+		bool _isEnabled;
+
+		enum MessageStates{FirstFF, SecondFF, Length, Instruction, ReadingData, Checksum};
 
         uint8_t _currentData[MAX_LENGTH];
         uint8_t _currentInstruction;

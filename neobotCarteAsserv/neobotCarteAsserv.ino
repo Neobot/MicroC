@@ -50,7 +50,7 @@ Adafruit_TCS34725 colorSensor1(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GA
 Adafruit_TCS34725 colorSensor2(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
 
 Robot batRobot(&colorSensor1, &colorSensor2, PERIODE_ASSERV_MS);
-Comm batCom(&batRobot);
+Comm batCom(&batRobot, ENABLE_PC_COMM);
 Logger batLogger(&batCom, ENABLE_DEBUG, ENABLE_PC_COMM);
 
 #ifdef SIMULATION
@@ -488,15 +488,13 @@ void setup()
 
 void loop()
 {
-	if (ENABLE_PC_COMM)
-	{
-		if (commLect.ready())
-			batCom.comm_read();
 
-		if (commEcrit.ready())
-		{
-			batCom.sendPosition();
-		}
+	if (commLect.ready())
+		batCom.comm_read();
+
+	if (commEcrit.ready())
+	{
+		batCom.sendPosition();
 	}
 
 	if (sonar.ready())
@@ -517,7 +515,7 @@ void loop()
         batRobot.calculCommande();
         envoiConsigne();
 
-		if(batRobot.passageAuPointSuivant() && ENABLE_PC_COMM)
+		if(batRobot.passageAuPointSuivant())
         {
             batCom.sendConsigne();
 			batCom.sendEvent(EVENT_IS_ARRIVED);

@@ -1,14 +1,15 @@
 #include "Arduino.h"
 #include "Protocol.h"
 
-Protocol::Protocol()
+Protocol::Protocol() : _isEnabled(true), _currentState(FirstFF)
 {
-	_currentState = FirstFF;
 }
-
 
 void Protocol::sendMessage(uint8_t instruction, uint8_t length, uint8_t data[], uint8_t id) const
 {
+	if (!_isEnabled)
+		return;
+
 	uint8_t frameData[length + 5];
     int i;
     uint8_t checksum;
@@ -35,9 +36,11 @@ void Protocol::sendMessage(uint8_t instruction, uint8_t length, uint8_t data[], 
 	SerialCOMM.write(frameData, length+5);
 }
 
-
-uint8_t Protocol::read()
+bool Protocol::read()
 {
+	if (!_isEnabled)
+		return false;
+
 	while (SerialCOMM.available() > 0)
     {
         uint8_t value;
@@ -101,21 +104,20 @@ uint8_t Protocol::read()
     		uint8_t calcChecksum;
     		for(int i = 0; i < _currentLength - 1; i++)
         		tempChecksum += _currentData[i];
-		tempChecksum += _currentLength;
-		tempChecksum += _currentInstruction;
+
+			tempChecksum += _currentLength;
+			tempChecksum += _currentInstruction;
     		calcChecksum = 255 - (uint8_t)(tempChecksum % 256);
     		
              _currentState = FirstFF;
-             //if (value != calcChecksum)
+			 //if (value != calcChecksum) ?
              //    continue;
                  
-             return 1;
-
-             //continue;
+			 return true;
          }
     }
     
-    return 0;
+	return false;
 }
 
 uint8_t * Protocol::getData()
@@ -131,5 +133,10 @@ uint8_t Protocol::getInstruction()
 uint8_t Protocol::getLength()
 {
 	return _currentLength - 1;
+}
+
+void Protocol::setCommEnabled(bool value)
+{
+	_isEnabled = value;
 }
 

@@ -17,13 +17,14 @@ const float ANGLE_FACTOR = 1000.0;
 
 Protocol protocol;
 
-Comm::Comm(Robot* r) : robot(r), _logger(0), _nbRegisteredParameters(0)
+Comm::Comm(Robot* r, bool enabled) : robot(r), _logger(0), _nbRegisteredParameters(0)
 {
+	protocol.setCommEnabled(enabled);
 }
 
 void Comm::setLogger(Logger *logger)
 {
-    _logger = logger;
+	_logger = logger;
 }
 
 uint8_t* Comm::readUInt8(uint8_t* data, uint8_t& value)

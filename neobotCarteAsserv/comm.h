@@ -20,7 +20,7 @@ class Comm
 {
 
 public:
-  Comm(Robot* r);
+  Comm(Robot* r, bool enabled);
 
   void setLogger(Logger* logger);
 
