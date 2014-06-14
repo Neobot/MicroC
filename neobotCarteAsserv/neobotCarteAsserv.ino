@@ -231,6 +231,17 @@ int readColor()
     return color;
 }
 
+void setVitesseLineare(float value)
+{
+	//TODO
+	batRobot._consigneDist._vitessMax = value;
+}
+
+void setVitesseRot(float value)
+{
+	//TODO
+	batRobot._consigneOrientation._vitessMax = value;
+}
 
 /*********************************************************************************/
 /*                               Initialisation                                  */
@@ -306,15 +317,15 @@ void setup()
 	batRobot.setComm(&batCom);
 
     //register parameters which can be changed trhough the comm
-	//Max number of parameters is currently 10, defined in comm.h
+	//Max number of parameters is currently 25, defined in comm.h
     batCom.registerParameter(&batRobot._pidDist._kp, "PID Distance P");
     batCom.registerParameter(&batRobot._pidDist._kd, "PID Distance D");
     batCom.registerParameter(&batRobot._pidOrientation._kp, "PID Orientation P");
     batCom.registerParameter(&batRobot._pidOrientation._kd, "PID Orientation D");
 	batCom.registerParameter(&batRobot._consigneDist._accelerationMaxParcourt, "Acceleration lineaire");
-	batCom.registerParameter(&batRobot._consigneDist._vitessMax, "Vitesse lineaire");
+	batCom.registerParameter(&batRobot._consigneDist._vitessMax, "Vitesse lineaire", &setVitesseLineare);
 	batCom.registerParameter(&batRobot._consigneOrientation._accelerationMaxParcourt, "Acceleration rot");
-	batCom.registerParameter(&batRobot._consigneOrientation._vitessMax, "Vitesse rot");
+	batCom.registerParameter(&batRobot._consigneOrientation._vitessMax, "Vitesse rot", &setVitesseRot);
 	batCom.registerParameter(&batRobot._consigneDist._dccCoeff, "coeff freinage dist");
 	batCom.registerParameter(&batRobot._consigneOrientation._dccCoeff, "coeff freinage rot");
 	batCom.registerParameter(&batRobot._consigneDist._dccAugmetationDcc, "coeff augment deceleration");

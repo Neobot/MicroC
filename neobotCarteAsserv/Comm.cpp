@@ -117,7 +117,7 @@ void Comm::sendParameterNames()
 
 void Comm::sendParameters()
 {
-    uint8_t data[MAX_PARAMETERS * 4 + 1];
+    uint8_t data[_nbRegisteredParameters * 4 + 1];
     uint8_t* dataPtr = &(data[0]);
 
     dataPtr = writeInt8(dataPtr, _nbRegisteredParameters);
@@ -440,9 +440,21 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
             Parameter& p = _parameters[i];
             if (p.floatValue)
-                *p.floatValue = value;
+			{
+				if (p.floatSetter)
+					p.floatSetter(value);
+				else
+					*p.floatValue = value;
+			}
             else if (p.intValue)
-                *p.intValue = (int)value;
+			{
+				int iValue = (int)value;
+				if (p.intSetter)
+					p.intSetter(iValue);
+				else
+					*p.intValue = iValue;
+			}
+                
         }
 
         ok = true;
@@ -496,21 +508,21 @@ void Comm::comm_read()
     }
 }
 
-void Comm::registerParameter(float* value, const String& name)
+void Comm::registerParameter(float* value, const String& name, void (*setter)(float))
 {
     if (_nbRegisteredParameters >= MAX_PARAMETERS)
         return;
 
-    _parameters[_nbRegisteredParameters] =  Parameter(value, name);
+	_parameters[_nbRegisteredParameters] =  Parameter(value, name, setter);
 	++_nbRegisteredParameters;
 }
 
-void Comm::registerParameter(int* value, const String& name)
+void Comm::registerParameter(int* value, const String& name, void (*setter)(int))
 {
     if (_nbRegisteredParameters >= MAX_PARAMETERS)
         return;
 
-    _parameters[_nbRegisteredParameters] =  Parameter(value, name);
+	_parameters[_nbRegisteredParameters] =  Parameter(value, name, setter);
 	++_nbRegisteredParameters;
 }
 

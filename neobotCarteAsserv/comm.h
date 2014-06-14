@@ -52,8 +52,8 @@ public:
   bool process_message(uint8_t data[], uint8_t instruction, uint8_t length);
   void comm_read();
 
-  void registerParameter(float* value, const String& name);
-  void registerParameter(int* value, const String& name);
+  void registerParameter(float* value, const String& name, void (*setter)(float) = 0);
+  void registerParameter(int* value, const String& name, void (*setter)(int) = 0);
 
 private:
   Robot* robot;
@@ -62,12 +62,16 @@ private:
   struct Parameter
   {
       Parameter() : floatValue(0), intValue(0) {}
-      Parameter(float* value, const String& paramName) : floatValue(value), intValue(0), name(paramName) {}
-      Parameter(int* value, const String& paramName) : floatValue(0), intValue(value), name(paramName) {}
+      Parameter(float* value, const String& paramName, void (*setter)(float) = 0) 
+		: floatValue(value), intValue(0), name(paramName), floatSetter() {}
+      Parameter(int* value, const String& paramName, void (*setter)(int) = 0) 
+		: floatValue(0), intValue(value), name(paramName), intSetter(setter) {}
 
       float* floatValue;
       int* intValue;
       String name;
+	  void (*floatSetter)(float);
+	  void (*intSetter)(int);
   };
 
   Parameter _parameters[MAX_PARAMETERS];
