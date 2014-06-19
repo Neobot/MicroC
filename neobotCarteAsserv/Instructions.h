@@ -10,6 +10,7 @@
 #define INSTR_DISABLE_SENSOR		21
 #define INSTR_SET_PARAMETERS		50
 #define INSTR_ASK_PARAMETERS		51
+#define INSTR_ASK_GRAPHS			52
 #define INSTR_ACTION				60
 
 // MicroC -> PC

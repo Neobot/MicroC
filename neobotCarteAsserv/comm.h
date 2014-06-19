@@ -39,6 +39,7 @@ public:
   
   void sendParameters();
   void sendParameterNames();
+  void sendRegisteredGraphs();
   void sendAR(uint8_t instruction, bool ok);
   void sendSonars(int ag, int ad, int rg, int rd);
   void sendColorSensorsEvents();
@@ -56,7 +57,7 @@ public:
   void registerParameter(float* value, const String& name, void (*setter)(float) = 0);
   void registerParameter(int* value, const String& name, void (*setter)(int) = 0);
 
-  void registerGraph(int graphId, GraphType type, const String& name, String parameterName[], int nbParameters);
+  void registerGraph(int graphId, GraphType type, const String& name, String parameterNames[]);
   void sendGraphValues(int graphId, float values[], int nbParameters);
   void sendGraphSingleValue(int graphId, int paramId, float value);
 
@@ -79,8 +80,20 @@ private:
 	  void (*intSetter)(int);
   };
 
-  Parameter _parameters[MAX_PARAMETERS];
+  struct Graph
+  {
+	  int id;
+	  GraphType type;
+	  String name;
+	  String parameterNames[];
+	  int parameterCount;
+  };
+
+  Parameter _parameters[];
   int _nbRegisteredParameters;
+
+  Graph _graphs[];
+  int _nbRegisteredGraphs;
 };
 
 #endif

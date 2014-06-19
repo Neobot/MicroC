@@ -331,6 +331,15 @@ void setup()
 	batCom.registerParameter(&batRobot._consigneDist._dccAugmetationDcc, "coeff augment deceleration");
 	batCom.registerParameter(&batRobot.coeffDetectionObst, "coeff detection adv");
 
+#ifdef GRAPH_VCC
+	String vccParams[2] = {"vcc lin", "vcc rot"};
+	batCom.registerGraph(VccGraph, CurveGraph, "Vitesse", vccParams);
+#endif
+
+#ifdef GRAPH_ULTRASON
+	String ultrasonParams[4] = {"AV DR", "AV GA", "AR DR", "AR GA"};
+	batCom.registerGraph(UltrasonGraph, BarGraph, "Sonars", ultrasonParams);
+#endif
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
@@ -387,19 +396,7 @@ void setup()
 			break;
 	}
 
-#ifdef GRAPH_VCC
-	String vccParams[2] = {"vcc lin", "vcc rot"};
-	batCom.registerGraph(VccGraph, CurveGraph, "Vitesse", vccParams, 2);
-#endif
 
-#ifdef GRAPH_ULTRASON
-	String ultrasonParams[4] = {"AV DR", "AV GA", "AR DR", "AR GA"};
-	batCom.registerGraph(UltrasonGraph, BarGraph, "Sonars", ultrasonParams, 4);
-
-	//just for testing
-	float ultrasonValues[4] = {42.f,42.f,42.f,42.f};
-	batCom.sendGraphValues(UltrasonGraph, ultrasonValues, 4);
-#endif
 
 #ifndef NO_JACK
 	bool jackPlugged = digitalRead(PIN_JACK) == HIGH;
