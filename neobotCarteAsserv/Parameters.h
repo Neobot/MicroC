@@ -1,10 +1,10 @@
 //#define COUNTDOWN
 //#define NO_JACK
-//#define SIMULATION						// simulates motors & robot movements
+//#define SIMULATION					// simulates motors & robot movements
 //#define NO_TPS_MATCH
 
 #define ENABLE_DEBUG		true		// if false, disable all logging
-#define ENABLE_PC_COMM		false		// enable comm to PC and redirect debug messages to PC
+#define ENABLE_PC_COMM		true		// enable comm to PC and redirect debug messages to PC
 
 //#define DEBUG_RECEIVED_COMM_INSTRUCTION
 //#define DEBUG_ENCODER
@@ -14,8 +14,14 @@
 //#define DEBUG_CONSIGNE_MOTEUR
 //#define DEBUG_CONSIGNE_LIN
 //#define DEBUG_CONSIGNE_ROT
-#define DEBUG_ULTRASON
+//#define DEBUG_ULTRASON
 //#define DEBUG_COLOR_SENSORS
+
+#define GRAPH_VCC
+#define GRAPH_ULTRASON
+
+#define VccGraph 0
+#define UltrasonGraph 1
 
 #define MAX_PWM 4095.0
 
@@ -78,4 +84,5 @@
 #define COEF_CORRECTION_ROUE_FOLLE_GAUCHE 1.0 - COEF_CORRECTION_ROUE_FOLLES / 2.0  // coef de corrections des valeurs envoy√©es par les roues folles
 
 #define CORFUGE 0.0
+
 

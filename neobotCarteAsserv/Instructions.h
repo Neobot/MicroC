@@ -10,6 +10,7 @@
 #define INSTR_DISABLE_SENSOR		21
 #define INSTR_SET_PARAMETERS		50
 #define INSTR_ASK_PARAMETERS		51
+#define INSTR_ASK_GRAPHS			52
 #define INSTR_ACTION				60
 
 // MicroC -> PC
@@ -23,6 +24,11 @@
 #define INSTR_LOG					124
 #define INSTR_PARAMETERS			125
 #define INSTR_PARAMETERS_NAMES		126
+
+#define INSTR_REGISTER_GRAPH		127
+#define INSTR_GRAPH_VALUES			128
+#define INSTR_GRAPH_SINGLE_VALUE	129
+
 #define INSTR_EVENT					130
 #define INSTR_SENSOR_EVENT			131
 
@@ -75,6 +81,12 @@ enum ColorSensorState
 	ColorYellow,
 	ColorWhite,
 	ColorBlack
+};
+
+enum GraphType
+{
+	CurveGraph,
+	BarGraph
 };
 
 #endif

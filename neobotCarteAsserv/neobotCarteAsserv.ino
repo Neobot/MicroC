@@ -50,7 +50,7 @@ Adafruit_TCS34725 colorSensor1(&Wire, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GA
 Adafruit_TCS34725 colorSensor2(&Wire1, TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
 
 Robot batRobot(&colorSensor1, &colorSensor2, PERIODE_ASSERV_MS);
-Comm batCom(&batRobot);
+Comm batCom(&batRobot, ENABLE_PC_COMM);
 Logger batLogger(&batCom, ENABLE_DEBUG, ENABLE_PC_COMM);
 
 #ifdef SIMULATION
@@ -227,6 +227,17 @@ int readColor()
     return color;
 }
 
+void setVitesseLineare(float value)
+{
+	//TODO
+	batRobot._consigneDist._vitessMax = value;
+}
+
+void setVitesseRot(float value)
+{
+	//TODO
+	batRobot._consigneOrientation._vitessMax = value;
+}
 
 /*********************************************************************************/
 /*                               Initialisation                                  */
@@ -302,20 +313,29 @@ void setup()
 	batRobot.setComm(&batCom);
 
     //register parameters which can be changed trhough the comm
-	//Max number of parameters is currently 10, defined in comm.h
+	//Max number of parameters is currently 25, defined in comm.h
     batCom.registerParameter(&batRobot._pidDist._kp, "PID Distance P");
     batCom.registerParameter(&batRobot._pidDist._kd, "PID Distance D");
     batCom.registerParameter(&batRobot._pidOrientation._kp, "PID Orientation P");
     batCom.registerParameter(&batRobot._pidOrientation._kd, "PID Orientation D");
 	batCom.registerParameter(&batRobot._consigneDist._accelerationMaxParcourt, "Acceleration lineaire");
-	batCom.registerParameter(&batRobot._consigneDist._vitessMax, "Vitesse lineaire");
+	batCom.registerParameter(&batRobot._consigneDist._vitessMax, "Vitesse lineaire", &setVitesseLineare);
 	batCom.registerParameter(&batRobot._consigneOrientation._accelerationMaxParcourt, "Acceleration rot");
-	batCom.registerParameter(&batRobot._consigneOrientation._vitessMax, "Vitesse rot");
+	batCom.registerParameter(&batRobot._consigneOrientation._vitessMax, "Vitesse rot", &setVitesseRot);
 	batCom.registerParameter(&batRobot._consigneDist._dccCoeff, "coeff freinage dist");
 	batCom.registerParameter(&batRobot._consigneOrientation._dccCoeff, "coeff freinage rot");
 	batCom.registerParameter(&batRobot._consigneDist._dccAugmetationDcc, "coeff augment deceleration");
 	batCom.registerParameter(&batRobot.coeffDetectionObst, "coeff detection adv");
 
+#ifdef GRAPH_VCC
+	String vccParams[2] = {"vcc lin", "vcc rot"};
+	batCom.registerGraph(VccGraph, CurveGraph, "Vitesse", vccParams);
+#endif
+
+#ifdef GRAPH_ULTRASON
+	String ultrasonParams[4] = {"AV DR", "AV GA", "AR DR", "AR GA"};
+	batCom.registerGraph(UltrasonGraph, BarGraph, "Sonars", ultrasonParams);
+#endif
 
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
@@ -365,6 +385,8 @@ void setup()
 		if (oneSecond.ready())
 			batCom.sendInit();
 	}
+
+
 
 #ifndef NO_JACK
 	bool jackPlugged = digitalRead(PIN_JACK) == HIGH;
@@ -517,6 +539,10 @@ void loop()
 					}
 			#endif
 
+			#ifdef GRAPH_VCC
+				float vccValues[2] = {batRobot._consigneDist._distDcc, batRobot._consigneOrientation._distDcc};
+				batCom.sendGraphValues(VccGraph, vccValues, 2);
+			#endif
 
 			#ifdef DEBUG_PID
 			if (!batRobot._consigneDist.estArrive())

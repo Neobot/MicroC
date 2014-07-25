@@ -510,6 +510,11 @@ void Robot::detectObstacleFrein()
 	_logger->println(_sonar_ARD);
 #endif
 
+#ifdef GRAPH_ULTRASON
+		float ultrasonValues[4] = {_sonar_AVD, _sonar_AVG, _sonar_ARD, _sonar_ARG};
+		_comm->sendGraphValues(UltrasonGraph, ultrasonValues, 4);
+#endif
+
 	if (_tourneFini != false)
 	{
 		// seuil en cm

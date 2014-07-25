@@ -14,6 +14,7 @@ void Logger::useComm(bool use)
 void Logger::print(const String &string)
 {
 	if (_enable)
+	{
 		if (_useComm)
 		{
 			_partialString += string;
@@ -21,12 +22,14 @@ void Logger::print(const String &string)
 		else
 		{
 			SerialDEBUG.print(string);
-		};
+		}
+	}
 }
 
 void Logger::println(const String &string)
 {
 	if (_enable)
+	{
 		if (_useComm)
 		{
 			_partialString += string;
@@ -36,12 +39,14 @@ void Logger::println(const String &string)
 		else
 		{
 			SerialDEBUG.println(string);
-		};
+		}
+	}
 }
 
 void Logger::print(int value)
 {
 	if (_enable)
+	{
 		if (_useComm)
 		{
 			_partialString += String(value);
@@ -49,12 +54,14 @@ void Logger::print(int value)
 		else
 		{
 			SerialDEBUG.print(value);
-		};
+		}
+	}
 }
 
 void Logger::println(int value)
 {
 	if (_enable)
+	{
 		if (_useComm)
 		{
 			_partialString += String(value);
@@ -64,12 +71,14 @@ void Logger::println(int value)
 		else
 		{
 			SerialDEBUG.println(value);
-		};
+		}
+	}
 }
 
 void Logger::print(double value)
 {
 	if (_enable)
+	{
 		if (_useComm)
 		{
 			_partialString += String(value);
@@ -77,12 +86,14 @@ void Logger::print(double value)
 		else
 		{
 			SerialDEBUG.print(value);
-		};
+		}
 	}
+}
 
 void Logger::println(double value)
 {
 	if (_enable)
+	{
 		if (_useComm)
 		{
 			_partialString += String(value);
@@ -92,6 +103,7 @@ void Logger::println(double value)
 		else
 		{
 			SerialDEBUG.println(value);
-		};
+		}
+	}
 }
 
