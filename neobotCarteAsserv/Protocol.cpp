@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "Protocol.h"
+#include "Parameters.h"
 
 Protocol::Protocol()
 {
@@ -32,7 +33,8 @@ void Protocol::sendMessage(uint8_t instruction, uint8_t length, uint8_t data[], 
     frameData[length + 4] = checksum;
 
     // Write the data to the serial port
-	SerialCOMM.write(frameData, length+5);
+	if (ENABLE_PC_COMM)
+		SerialCOMM.write(frameData, length+5);
 }
 
 

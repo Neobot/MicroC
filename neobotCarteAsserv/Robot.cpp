@@ -151,7 +151,7 @@ void Robot::calculConsigne()
 	_logger->print(_deltaDistMm);
 	_logger->print(", Theta demande: ");
 	_logger->println(thetaDemande);
-	_logger->print("vitesse courante: ");
+	_logger->print(" vitesse courante: ");
 	_logger->print(_consigneDist._vitessCourrante);
 	_logger->print(" acc max parcours: ");
 	_logger->println(_consigneDist._accelerationMaxParcourt);
@@ -500,23 +500,23 @@ void Robot::detectObstacleFrein()
 {
 
 #ifdef DEBUG_ULTRASON
-		_logger->print("AV DR ");
-		_logger->print(_sonar_AVD);
-		_logger->print(" AV GA ");
-		_logger->print(_sonar_AVG);
-		_logger->print(" AR DR ");
-		_logger->print(_sonar_ARD);
-		_logger->print(" AR GA ");
-		_logger->println(_sonar_ARG);
+	_logger->print("Sonars (cm): Av g=");
+	_logger->print(_sonar_AVG);
+	_logger->print(" Av d=");
+	_logger->print(_sonar_AVD);
+	_logger->print(" Ar g=");
+	_logger->print(_sonar_ARG);
+	_logger->print(" Ar d=");
+	_logger->println(_sonar_ARD);
 #endif
 
 	if (_tourneFini != false)
 	{
-		// 255 => 1000 mm
-		int seuil = (int) (coeffDetectionObst * 255 * _consigneDist._distDcc / 1000 + 50);
+		// seuil en cm
+		int seuil = (int) (coeffDetectionObst * _consigneDist._distDcc / 10 + 40);
 
 #ifdef DEBUG_ULTRASON
-		_logger->print("seuil ");
+		_logger->print("Seuil obstacle sonars: ");
 		_logger->println(seuil);
 #endif
 
@@ -540,12 +540,13 @@ void Robot::detectObstacleFrein()
 		}
 
 #ifdef DEBUG_ULTRASON
-		_logger->print(_obstAvD);
-		_logger->print(" ");
+		_logger->print("Obstacles ultrason:  Av g=");
 		_logger->print(_obstAvG);
-		_logger->print(" ");
+		_logger->print(" Av d=");
+		_logger->print(_obstAvD);
+		_logger->print(" Ar d=");
 		_logger->print(_obstArG);
-		_logger->print(" ");
+		_logger->print(" Ar g=");
 		_logger->println(_obstArD);
 #endif
 
@@ -571,9 +572,10 @@ void Robot::detectObstacleFrein()
 			pointSuivant.pointArret = true;
 
 #ifdef DEBUG_ULTRASON
-		_logger->print(x);
-		_logger->print(" ");
-		_logger->println(y);
+			_logger->print("Coord stop point: x=");
+			_logger->print(x);
+			_logger->print(" y=");
+			_logger->println(y);
 #endif
 
 		}

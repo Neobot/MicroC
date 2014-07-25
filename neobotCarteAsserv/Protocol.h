@@ -7,7 +7,7 @@
 class Protocol
 {
     public:
-        Protocol();
+		Protocol();
 
 		void sendMessage(uint8_t instruction, uint8_t length, uint8_t data[], uint8_t id = 0) const;
 		uint8_t read(); // returns true if frame finished
@@ -23,7 +23,6 @@ class Protocol
         uint8_t _currentLength;
         uint8_t _currentByteRead;
         MessageStates _currentState;
-        
 };
 
 #endif // PROTOCOL_H

@@ -127,6 +127,7 @@ class Robot
 
 	bool _sens;
 
+	// sonar values in cm
 	int _sonar_AVD;
 	int _sonar_AVG;
 	int _sonar_ARD;

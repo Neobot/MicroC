@@ -20,7 +20,7 @@ class Comm
 {
 
 public:
-  Comm(Robot* r);
+  Comm(Robot* r, bool commEnabled = true);
 
   void setLogger(Logger* logger);
 
@@ -72,6 +72,8 @@ private:
 
   Parameter _parameters[MAX_PARAMETERS];
   int _nbRegisteredParameters;
+
+  bool _commEnabled;
 };
 
 #endif

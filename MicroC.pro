@@ -16,6 +16,8 @@ SOURCES += \
             neobotCarteAsserv/Logger.cpp \
             neobotCarteAsserv/Simulation.cpp \
             libraries/AdafruitTCS34725master/Adafruit_TCS34725.cpp \
+			libraries/PWM01/pwm01.cpp \
+			libraries/Task/Task.cpp \
 			TestColorSensor/TestColorSensor.ino \
 			TestMoteursDue/TestMoteursDue.ino \
 			neobotCarteAsserv/Comm.cpp
@@ -33,4 +35,7 @@ SOURCES += \
 			neobotCarteAsserv/IOConfig.h \
 			neobotCarteAsserv/Parameters.h \
 			neobotCarteAsserv/Instructions.h \
-			libraries/AdafruitTCS34725master/Adafruit_TCS34725.h
+			libraries/AdafruitTCS34725master/Adafruit_TCS34725.h \
+			libraries/QueueList/QueueList.h \
+			libraries/PWM01/pwm01.h \
+			libraries/Task/Task.h

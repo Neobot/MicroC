@@ -15,13 +15,12 @@
  */
 
 
-//#include <arduino.h>
 #include <math.h>
+#include <Wire.h>				// i2c
 #include <Servo.h>
-#include "QueueList.h" // fifo
-#include <Task.h>
-#include "pwm01.h"
-#include <Wire.h>
+#include "QueueList.h"			// fifo
+#include "Task.h"
+#include "pwm01.h"				// pwm with custom frequency (motors)
 #include "Adafruit_TCS34725.h"	// color sensors
 
 #include "IOConfig.h"
@@ -39,6 +38,7 @@
 /*********************************************************************************/
 
 Task asservissement(PERIODE_ASSERV_MS);
+Task odometry(PERIODE_ODOMETRY_MS);
 Task commLect(PERIODE_COM_LECTURE);
 Task commEcrit(PERIODE_COM_ECRITURE);
 Task sonar(PERIODE_COM_ECRITURE);
@@ -98,6 +98,9 @@ unsigned int readEncoder(bool wheel, bool encoder, bool spd)
     digitalWrite(PIN_FPGA_SEL0, LOW);
     total = (total << 12) + readOneEncodeurWord();
 
+	if (spd == 1)
+		total -= 8388608;		// offset speed as value sent from FPGA always positive
+
     return total;
 }
 
@@ -111,10 +114,10 @@ void MAJPosition()
     dd = readEncoder(1, 0, 0) - initEncodeurD;
 
 	// read encoders speed (in mm/s)
-	speedL = readEncoder(0, 0, 1) - 8388608;
-	speedR = readEncoder(1, 0, 1) - 8388608;
-	speedMotL = readEncoder(0, 1, 1) - 8388608;
-	speedMotR = readEncoder(1, 1, 1) - 8388608;
+	speedL = readEncoder(0, 0, 1);
+	speedR = readEncoder(1, 0, 1);
+	speedMotL = readEncoder(0, 1, 1);
+	speedMotR = readEncoder(1, 1, 1);
 #else
     dg = simMotorL.getSteps();
     dd = simMotorR.getSteps();
@@ -159,31 +162,29 @@ void envoiConsigne()
     digitalWrite(PIN_MOTEUR_GAUCHE_PWM_DIGITAL, stopMotG ? LOW : HIGH);	// stop motor if command is zero
     digitalWrite(PIN_MOTEUR_DROITE_PWM_DIGITAL, stopMotD ? LOW : HIGH);
 
-#ifdef DEBUG_CONSIGNE_MOTEUR
-  
-    batLogger.print("g=");
-    batLogger.print(batRobot._commandeRoueGauche);
-    batLogger.print(" d=");
-    batLogger.print(batRobot._commandeRoueDroite);
-    batLogger.println(" ");
-  
-#endif
 	pwm_write_duty(PIN_MOTEUR_GAUCHE_SENS, batRobot._commandeRoueGauche);
 	pwm_write_duty(PIN_MOTEUR_DROITE_SENS, batRobot._commandeRoueDroite);
 #else
     simMotorL.setCommande(batRobot._commandeRoueGauche);
     simMotorR.setCommande(batRobot._commandeRoueDroite);
 #endif
+
+#ifdef DEBUG_CONSIGNE_MOTEUR
+	batLogger.print("Commande moteur: g=");
+	batLogger.print(batRobot._commandeRoueGauche);
+	batLogger.print(" d=");
+	batLogger.println(batRobot._commandeRoueDroite);
+#endif
 }
 
 void litEtEnvoieSonar()
 {
-	int ag = analogRead(PIN_SONAR_AV_G);	// max 4096 = 1024 cm
+	int ag = analogRead(PIN_SONAR_AV_G);	// max 4096 = 1024 cm (12 bits)
     int ad = analogRead(PIN_SONAR_AV_D);
     int rg = analogRead(PIN_SONAR_AR_G);
     int rd = analogRead(PIN_SONAR_AR_D);
 
-	int valmax = 397;		// max 1 meter
+	int valmax = 1020;		// truncate to 1020 = 255 cm
 
 	ag = constrain(ag, 0, valmax);
 	ad = constrain(ad, 0, valmax);
@@ -198,11 +199,6 @@ void litEtEnvoieSonar()
 	//batCom.sendSonars(ag, ad, rg, rd);
 	batRobot.MAJSonar(ag, ad, rg, rd);
 	batRobot.detectObstacleFrein();
-}
-
-void bougeServo()
-{
-
 }
 
 void setLedRGB(int r, int g, int b)
@@ -324,9 +320,6 @@ void setup()
     //servoArG.attach(PIN_SERVO_G, 900, 2500);
     //servoArD.attach(PIN_SERVO_D, 900, 2500);
 
-    //batRobot.MAJContaineur(true, 3);
-    //batRobot.MAJContaineur(false, 3);
-
     //servoArG.detach();
     //servoArD.detach();
 
@@ -364,16 +357,13 @@ void setup()
 	batRobot.disableColorSensor(Robot::ColorSensor2);
 
 	// wait for PC to be ready
-	while (!batRobot._pingReceived)
+	while (ENABLE_PC_COMM && !batRobot._pingReceived)
 	{
 		if (commLect.ready())
 			batCom.comm_read();
 
 		if (oneSecond.ready())
 			batCom.sendInit();
-
-		if (!ENABLE_PC_COMM)
-			break;
 	}
 
 #ifndef NO_JACK
@@ -463,36 +453,29 @@ void setup()
 
 void loop()
 {
-	if (ENABLE_PC_COMM)
-	{
-		if (commLect.ready())
-			batCom.comm_read();
+	if (commLect.ready())
+		batCom.comm_read();
 
-		if (commEcrit.ready())
-		{
-			batCom.sendPosition();
-		}
-	}
+	if (commEcrit.ready())
+		batCom.sendPosition();
 
 	if (sonar.ready())
-	{
 		litEtEnvoieSonar();
-	}
 
 	if (readColorSensors.ready())
-	{
 		batCom.sendColorSensorsEvents();
-	}
+
+	if (odometry.ready())
+		MAJPosition();
 
     if (asservissement.ready())
     {
-		MAJPosition();
         batRobot.vaVersPointSuivant();
         batRobot.calculConsigne();
         batRobot.calculCommande();
         envoiConsigne();
 
-		if(batRobot.passageAuPointSuivant() && ENABLE_PC_COMM)
+		if(batRobot.passageAuPointSuivant())
         {
             batCom.sendConsigne();
 			batCom.sendEvent(EVENT_IS_ARRIVED);
@@ -582,7 +565,7 @@ void loop()
 					}
 			#endif
 
-		}
+		}	// debugEnvoie
 
 #ifndef NO_TPS_MATCH
         if(millis() - tempsMatch >= TPS_MATCH)

@@ -17,7 +17,7 @@ const float ANGLE_FACTOR = 1000.0;
 
 Protocol protocol;
 
-Comm::Comm(Robot* r) : robot(r), _logger(0), _nbRegisteredParameters(0)
+Comm::Comm(Robot* r, bool commEnabled) : robot(r), _commEnabled(commEnabled), _logger(0), _nbRegisteredParameters(0)
 {
 }
 
@@ -486,7 +486,7 @@ bool Comm::process_message(uint8_t data[], uint8_t instruction, uint8_t length)
 
 void Comm::comm_read()
 {
-    if (protocol.read())
+	if (_commEnabled && protocol.read())
     {
         bool ok = process_message(protocol.getData(), protocol.getInstruction(), protocol.getLength());
 
